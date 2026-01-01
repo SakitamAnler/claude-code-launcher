@@ -21,7 +21,7 @@ import chalk from "chalk";
 async function main(): Promise<void> {
   try {
     // 显示程序标题
-    UI.printTitle("Claude Code Launcher v" + "x.y.z"); // 版本号会被构建脚本替换
+    UI.printTitle("claude-code-launcher", "by sakitamanler");
 
     // console.log('程序参数：', process.argv)
     const argsResult = parseArgs();
@@ -89,7 +89,7 @@ async function main(): Promise<void> {
     else {
       UI.printSuccessBox("配置文件加载成功");
 
-      // 4. 处理命令行参数
+      // 主循环：支持返回上一级
       let selectedProvider = argsResult.provider || '';
       const prompt = argsResult.prompt || '';
       const output = argsResult.output || '';
@@ -107,89 +107,79 @@ async function main(): Promise<void> {
         }
       }
 
-      if (selectedProvider) {
-        // 检查指定的 provider 是否存在
-        if (config.providers[selectedProvider]) {
-          Logger.info(`使用命令行指定的 provider: ${selectedProvider}`);
+      // 主循环
+      while (true) {
+        if (selectedProvider) {
+          // 检查指定的 provider 是否存在
+          if (config.providers[selectedProvider]) {
+            Logger.info(`使用命令行指定的 provider: ${selectedProvider}`);
+          } else {
+            Logger.warning(`参数指定的 provider "${selectedProvider}" 不存在`);
+            selectedProvider = await selectProviderInteractively(config);
+          }
         } else {
-          Logger.warning(`参数指定的 provider "${selectedProvider}" 不存在`);
-          // 注意：这里我们仍然需要 provider，所以即使有 prompt 也要重新选择
+          // 交互式选择 provider
           selectedProvider = await selectProviderInteractively(config);
         }
-      } else {
-        // 交互式选择 provider
-        selectedProvider = await selectProviderInteractively(config);
-      }
 
-      // 5. 获取选中的 provider 配置
-      const providerConfig = config.providers[selectedProvider];
-      if (!providerConfig) {
-        Logger.error(`Provider "${selectedProvider}" 配置不存在`);
-        process.exit(1);
-      }
-
-      // 6. 选择启动模式
-      const launchMode = await selectLaunchMode();
-
-      if (launchMode === "exit") {
-        Logger.info("退出应用程序");
-        process.exit(0);
-      }
-
-      if (launchMode === "back") {
-        // 返回上一级，重新选择 provider
-        selectedProvider = await selectProviderInteractively(config);
-        const providerConfigBack = config.providers[selectedProvider];
-        if (!providerConfigBack) {
+        // 获取选中的 provider 配置
+        const providerConfig = config.providers[selectedProvider];
+        if (!providerConfig) {
           Logger.error(`Provider "${selectedProvider}" 配置不存在`);
           process.exit(1);
         }
 
-        // 递归调用，重新选择启动模式
-        const launchModeRetry = await selectLaunchMode();
+        // 选择启动模式
+        const launchMode = await selectLaunchMode();
 
-        if (launchModeRetry === "permanent") {
-          const success = applyProviderToSettings(providerConfigBack);
+        // 处理退出
+        if (launchMode === "exit") {
+          console.log("");
+          console.log(chalk.gray("👋 再见！"));
+          console.log("");
+          process.exit(0);
+        }
+
+        // 处理返回上一级
+        if (launchMode === "back") {
+          // 重新选择 provider，继续循环
+          continue;
+        }
+
+        // 执行选定的模式
+        if (launchMode === "permanent") {
+          // 永久模式：写入配置文件
+          UI.printStep(4, 4, `应用 ${selectedProvider} 配置`);
+          const success = applyProviderToSettings(providerConfig);
+
           if (!success) {
             Logger.error("应用配置失败，程序终止");
             process.exit(1);
           }
-          Logger.success("配置已保存！现在可以直接使用 'claude' 命令启动 Claude Code");
-          Logger.info(`下次启动将默认使用 ${selectedProvider} 模型`);
+
+          UI.printSeparator();
+          console.log(chalk.green("✓") + " 配置已保存！");
+          console.log("");
+          console.log("  现在可以直接使用 " + chalk.yellow("'claude'") + " 命令启动");
+          console.log("");
+          console.log("  下次启动将默认使用: " + chalk.cyan(selectedProvider));
+          console.log("");
+          console.log(chalk.gray("  提示: 如需切换模型，请再次运行 ccl 命令"));
+          console.log("");
           process.exit(0);
         } else {
-          const envVars = providerToEnvVars(providerConfigBack);
+          // 临时模式：使用环境变量
+          UI.printSeparator();
+          console.log(chalk.cyan("🚀 启动模式: 临时模式"));
+          console.log(chalk.gray("  使用环境变量，退出后不影响配置文件"));
+          console.log("");
+          const envVars = providerToEnvVars(providerConfig);
           const additionalOTQP = config.additionalOTQP || '';
           await launchClaudeCode(envVars, prompt, output, additionalOTQP);
         }
-        return;
-      }
 
-      if (launchMode === "permanent") {
-        // 永久模式：写入配置文件
-        UI.printStep(4, 4, `应用 ${selectedProvider} 配置`);
-        const success = applyProviderToSettings(providerConfig);
-
-        if (!success) {
-          Logger.error("应用配置失败，程序终止");
-          process.exit(1);
-        }
-
-        UI.printSeparator();
-        console.log(chalk.green("✓") + " 配置已保存！");
-        console.log("");
-        console.log("  现在可以直接使用 " + chalk.yellow("'claude'") + " 命令启动");
-        console.log("");
-        console.log("  下次启动将默认使用: " + chalk.cyan(selectedProvider));
-        console.log("");
-        console.log(chalk.gray("  提示: 如需切换模型，请再次运行 ccl 命令"));
-        console.log("");
-        process.exit(0);
-      } else {
-        // 临时模式：使用环境变量
-        const envVars = providerToEnvVars(providerConfig);
-        const additionalOTQP = config.additionalOTQP || '';
-        await launchClaudeCode(envVars, prompt, output, additionalOTQP);
+        // 如果执行到这里，说明临时模式已经完成了，退出循环
+        break;
       }
     }
   } catch (error) {

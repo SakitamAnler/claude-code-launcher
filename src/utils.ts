@@ -13,14 +13,30 @@ const CONFIG_FILE_NAME = "ccl.config.json";
  * 界面美化工具
  */
 export class UI {
-  // 打印带边框的标题
-  static printTitle(title: string): void {
-    const padding = 4;
-    const line = "═".repeat(title.length + padding * 2);
+  // 打印带边框的标题（支持两行）
+  static printTitle(title: string, subtitle?: string): void {
     console.log("");
-    console.log(chalk.cyan("╔" + line + "╗"));
-    console.log(chalk.cyan("║") + " ".repeat(padding) + chalk.bold.cyan(title) + " ".repeat(padding) + chalk.cyan("║"));
-    console.log(chalk.cyan("╚" + line + "╝"));
+    console.log(chalk.cyan("╔" + "═".repeat(50) + "╗"));
+
+    // 第一行：主标题
+    const titlePadding = Math.floor((50 - title.length) / 2);
+    const titleLine = chalk.cyan("║") +
+      " ".repeat(Math.max(0, titlePadding)) +
+      chalk.bold.cyan(title) +
+      " ".repeat(Math.max(0, 50 - titlePadding - title.length)) +
+      chalk.cyan("║");
+    console.log(titleLine);
+
+    // 第二行：副标题
+    if (subtitle) {
+      const subPadding = Math.floor((50 - subtitle.length) / 2);
+      const subLine = chalk.cyan("║") +
+        chalk.gray(" ".repeat(Math.max(0, subPadding)) + subtitle + " ".repeat(Math.max(0, 50 - subPadding - subtitle.length))) +
+        chalk.cyan("║");
+      console.log(subLine);
+    }
+
+    console.log(chalk.cyan("╚" + "═".repeat(50) + "╝"));
     console.log("");
   }
 
@@ -31,19 +47,21 @@ export class UI {
 
   // 打印成功框
   static printSuccessBox(message: string): void {
+    const line = "─".repeat(Math.max(40, message.length + 4));
     console.log("");
-    console.log(chalk.green("┌─ " + message + " " + "─".repeat(Math.max(0, 50 - message.length))));
-    console.log(chalk.green("│") + " " + chalk.white("✓") + " " + message);
-    console.log(chalk.green("└" + "─".repeat(message.length + 4)));
+    console.log(chalk.green("┌─ " + line + "─┐"));
+    console.log(chalk.green("│") + "  " + chalk.white("✓") + " " + message + " ".repeat(Math.max(0, 45 - message.length)) + chalk.green("│"));
+    console.log(chalk.green("└" + "─".repeat(message.length + 4) + "─┘"));
     console.log("");
   }
 
   // 打印信息框
   static printInfoBox(message: string): void {
+    const line = "─".repeat(Math.max(40, message.length + 4));
     console.log("");
-    console.log(chalk.blue("┌─ " + message + " " + "─".repeat(Math.max(0, 50 - message.length))));
-    console.log(chalk.blue("│") + " " + chalk.white("ℹ") + " " + message);
-    console.log(chalk.blue("└" + "─".repeat(message.length + 4)));
+    console.log(chalk.blue("┌─ " + line + "─┐"));
+    console.log(chalk.blue("│") + "  " + chalk.white("ℹ") + " " + message + " ".repeat(Math.max(0, 45 - message.length)) + chalk.blue("│"));
+    console.log(chalk.blue("└" + "─".repeat(message.length + 4) + "─┘"));
     console.log("");
   }
 
