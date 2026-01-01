@@ -367,18 +367,8 @@ Copyright (c) 2025-present
 
 ---
 
-## 📞 联系方式
-
-- 🐛 **问题反馈**：[提交 Issue](https://github.com/your-username/claude-code-launcher/issues)
-- 💡 **功能建议**：[提交 Discussion](https://github.com/your-username/claude-code-launcher/discussions)
-- 📧 **邮件联系**：your-email@example.com
-
----
-
 <div align="center">
 
-**如果这个项目对您有帮助，请给个 ⭐ Star 支持一下！**
-
-Made with ❤️ by the Claude Code Launcher Team
+**如果这个项目对您有帮助，请给它一个 ⭐ Star！**
 
 </div>
