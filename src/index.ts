@@ -341,6 +341,7 @@ async function selectLaunchMode(): Promise<string> {
   }
 
   // 回退到临时模式
+  Logger.warning("模式选择器启动失败，使用临时模式");
   return "temp";
 }
 

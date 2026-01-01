@@ -1,6 +1,6 @@
 {
   "name": "sakitamanler-ccl-launcher",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "sakitamanler Claude Code Launcher CLI 安装器",
   "main": "index.js",
   "bin": {
@@ -28,6 +28,6 @@
   "author": "sakitamanler",
   "license": "MIT",
   "dependencies": {
-    "sakitamanler-ccl-win32": "^1.0.4"
+    "sakitamanler-ccl-win32": "^1.0.5"
   }
 }
