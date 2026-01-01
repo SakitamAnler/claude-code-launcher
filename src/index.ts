@@ -10,7 +10,7 @@ import {
   isExecutable,
   getCurrentDir,
   applyProviderToSettings,
-} from "./utils.js";
+} from "./utils.build.js";
 import prompts from "prompts";
 
 /**
