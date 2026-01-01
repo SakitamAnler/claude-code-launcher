@@ -92,7 +92,11 @@
 ```bash
 # 通过 npm 全局安装（推荐）
 npm install -g sakitamanler-ccl-launcher
+```
 
+### 更新
+
+```bash
 # 更新到最新版本
 npm install -g sakitamanler-ccl-launcher@latest
 ```
