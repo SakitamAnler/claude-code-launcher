@@ -9,6 +9,9 @@ import {
   launchClaudeCode,
   isExecutable,
   getCurrentDir,
+  applyProviderToSettings,
+  restoreClaudeSettings,
+  cleanupBackup,
 } from "./utils.js";
 import prompts from "prompts";
 
@@ -116,11 +119,29 @@ async function main(): Promise<void> {
         process.exit(1);
       }
 
-      // 5. 转换为环境变量并启动 Claude Code
-      const envVars = providerToEnvVars(providerConfig);
-      // 获取 additionalOTQP 配置
-      const additionalOTQP = config.additionalOTQP || '';
-      await launchClaudeCode(envVars, prompt, output, additionalOTQP);
+      // 5. 应用 provider 配置到 settings.json
+      Logger.info(`正在应用 ${selectedProvider} 配置到 Claude Code...`);
+      const { success, backupPath } = applyProviderToSettings(providerConfig);
+
+      if (!success) {
+        Logger.error("应用配置失败，程序终止");
+        process.exit(1);
+      }
+
+      try {
+        // 6. 转换为环境变量（保持兼容性，但现在主要靠 settings.json）
+        const envVars = providerToEnvVars(providerConfig);
+        // 获取 additionalOTQP 配置
+        const additionalOTQP = config.additionalOTQP || '';
+        await launchClaudeCode(envVars, prompt, output, additionalOTQP);
+      } finally {
+        // 7. Claude Code 退出后恢复原始配置
+        if (backupPath) {
+          restoreClaudeSettings(backupPath);
+          // 清理备份文件
+          cleanupBackup(backupPath);
+        }
+      }
     }
   } catch (error) {
     Logger.error(

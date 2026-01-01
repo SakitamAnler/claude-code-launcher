@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
-import { dirname, join, resolve } from "path";
+import { readFileSync, existsSync, writeFileSync, mkdirSync, copyFileSync } from "fs";
+import { dirname, join, resolve, homedir } from "path";
 import type { AppConfig, ProviderConfig, EnvVars, OSType } from "./types.js";
 
 // 定义版本号常量，构建时会被替换为实际版本号
@@ -606,5 +606,169 @@ export async function launchClaudeCode(
       }`
     );
     process.exit(1);
+  }
+}
+
+/**
+ * 获取 Claude Code settings.json 文件路径
+ */
+export function getClaudeSettingsPath(): string {
+  const homeDir = homedir();
+  return join(homeDir, ".claude", "settings.json");
+}
+
+/**
+ * 读取 Claude Code settings.json
+ */
+export function readClaudeSettings(): Record<string, any> | null {
+  const settingsPath = getClaudeSettingsPath();
+
+  if (!existsSync(settingsPath)) {
+    return null;
+  }
+
+  try {
+    const content = readFileSync(settingsPath, "utf-8");
+    return JSON.parse(content);
+  } catch (error) {
+    Logger.warning(`读取 settings.json 失败: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+/**
+ * 写入 Claude Code settings.json
+ */
+export function writeClaudeSettings(settings: Record<string, any>): boolean {
+  const settingsPath = getClaudeSettingsPath();
+  const settingsDir = dirname(settingsPath);
+
+  // 确保 .claude 目录存在
+  if (!existsSync(settingsDir)) {
+    try {
+      mkdirSync(settingsDir, { recursive: true });
+    } catch (error) {
+      Logger.error(`创建 .claude 目录失败: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
+  }
+
+  try {
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf-8");
+    return true;
+  } catch (error) {
+    Logger.error(`写入 settings.json 失败: ${error instanceof Error ? error.message : String(error)}`);
+    return false;
+  }
+}
+
+/**
+ * 备份当前的 settings.json
+ */
+export function backupClaudeSettings(): string | null {
+  const settingsPath = getClaudeSettingsPath();
+
+  if (!existsSync(settingsPath)) {
+    return null;
+  }
+
+  const backupPath = `${settingsPath}.ccl.backup`;
+
+  try {
+    copyFileSync(settingsPath, backupPath);
+    Logger.info(`已备份原始配置到: ${backupPath}`);
+    return backupPath;
+  } catch (error) {
+    Logger.warning(`备份 settings.json 失败: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+/**
+ * 恢复 settings.json 备份
+ */
+export function restoreClaudeSettings(backupPath: string | null): boolean {
+  if (!backupPath || !existsSync(backupPath)) {
+    return false;
+  }
+
+  const settingsPath = getClaudeSettingsPath();
+
+  try {
+    copyFileSync(backupPath, settingsPath);
+    Logger.success("已恢复原始配置");
+    return true;
+  } catch (error) {
+    Logger.warning(`恢复 settings.json 失败: ${error instanceof Error ? error.message : String(error)}`);
+    return false;
+  }
+}
+
+/**
+ * 将 provider 配置转换为 settings.json 格式
+ */
+export function providerToSettings(provider: ProviderConfig): Record<string, any> {
+  const env: Record<string, any> = {
+    ANTHROPIC_AUTH_TOKEN: provider.auth_token,
+    ANTHROPIC_BASE_URL: provider.base_url,
+  };
+
+  // 遍历 provider 的其他属性
+  for (const [key, value] of Object.entries(provider)) {
+    if (key === "base_url" || key === "auth_token" || key === "description") {
+      continue;
+    }
+
+    // claude_code_ 或 api_ 开头的属性不需要前缀
+    if (key.startsWith("claude_code_") || key.startsWith("api_")) {
+      env[key.toUpperCase()] = value;
+      continue;
+    }
+
+    // 其他属性添加 ANTHROPIC_ 前缀
+    const envKey = `ANTHROPIC_${key.toUpperCase()}`;
+    if (value !== undefined && value !== null && value !== "") {
+      env[envKey] = value;
+    }
+  }
+
+  return { env };
+}
+
+/**
+ * 应用 provider 配置到 Claude Code settings.json
+ */
+export function applyProviderToSettings(provider: ProviderConfig): {
+  success: boolean;
+  backupPath?: string;
+} {
+  // 1. 备份当前配置
+  const backupPath = backupClaudeSettings();
+
+  // 2. 转换 provider 配置
+  const newSettings = providerToSettings(provider);
+
+  // 3. 写入 settings.json
+  const success = writeClaudeSettings(newSettings);
+
+  if (success) {
+    Logger.success("已将 provider 配置写入 Claude Code settings.json");
+  }
+
+  return { success, backupPath: backupPath || undefined };
+}
+
+/**
+ * 清理临时备份文件
+ */
+export function cleanupBackup(backupPath: string): void {
+  const fs = require("fs");
+  try {
+    if (existsSync(backupPath)) {
+      fs.unlinkSync(backupPath);
+      Logger.info("已清理临时备份文件");
+    }
+  } catch (error) {
+    Logger.warning(`清理备份文件失败: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
