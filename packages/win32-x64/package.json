@@ -1,0 +1,41 @@
+{
+  "name": "sakitamanler-ccl-win32",
+  "version": "0.9.9",
+  "description": "sakitamanler Claude Code Launcher for Windows x64",
+  "main": "index.js",
+  "bin": {
+    "ccl-win32-x64": "bin/ccl-win32-x64.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "bin/ccl-win32-x64.js",
+    "zip/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ccl",
+    "claude-code-launcher",
+    "sakitamanler",
+    "windows",
+    "x64"
+  ],
+  "author": "sakitamanler",
+  "license": "MIT",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "preferGlobal": true,
+  "dependencies": {
+    "adm-zip": "^0.5.9"
+  },
+  "devDependencies": {},
+  "type": "commonjs"
+}

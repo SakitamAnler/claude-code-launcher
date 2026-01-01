@@ -119,7 +119,7 @@ export function loadConfig(): AppConfig | null {
     // 创建默认配置文件内容
     const defaultConfig = {
       providers: {
-        "GLM-4.6": {
+        "GLM-4.7": {
           description:
             "智谱最新模型，支持工具调用和复杂任务，通过自有MCP整合实现视觉理解、联网搜索、网页读取能力",
           base_url: "https://open.bigmodel.cn/api/anthropic",
@@ -127,18 +127,18 @@ export function loadConfig(): AppConfig | null {
           api_timeout_ms: "3000000",
           claude_code_disable_nonessential_traffic: "1",
         },
-        "MiniMax-M2": {
+        "MiniMax-M2.1": {
           description:
             "MiniMax最新模型，擅长多步工具调用和端到端任务规划，同样通过自有MCP整合实现视觉理解、联网搜索能力",
           base_url: "https://api.minimaxi.com/anthropic",
           auth_token: "MINIMAX_API_KEY",
           api_timeout_ms: "3000000",
           claude_code_disable_nonessential_traffic: "1",
-          model: "MiniMax-M2",
-          small_fast_model: "MiniMax-M2",
-          default_opus_model: "MiniMax-M2",
-          default_sonnet_model: "MiniMax-M2",
-          default_haiku_model: "MiniMax-M2",
+          model: "MiniMax-M2.1.1",
+          small_fast_model: "MiniMax-M2.1",
+          default_opus_model: "MiniMax-M2.1",
+          default_sonnet_model: "MiniMax-M2.1",
+          default_haiku_model: "MiniMax-M2.1",
         },
         "Kimi-K2": {
           description: "Kimi最新模型，支持多步工具调用与思考",
@@ -161,7 +161,7 @@ export function loadConfig(): AppConfig | null {
           claude_code_disable_nonessential_traffic: "1",
         },
       },
-      default_provider: "GLM-4.6",
+      default_provider: "GLM-4.7",
       additionalOTQP: `请使用中文回答。`,
     };
 

@@ -1,241 +1,411 @@
-# Claude Code Launcher (ccl)
+<div align="center">
 
-Claude Code 模型启动器 - 让您轻松切换使用不同的 AI 模型作为 Claude Code 的后端。
+# 🚀 Claude Code Launcher (ccl)
 
-## 注意
+### 让 Claude Code 支持多模型切换，轻松使用国产优秀大模型
 
-推荐通过 `npm install -g ccl-cli-installer` 快速将 `ccl` 作为系统命令安装到你的系统，方便随处使用。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E=18.0.0-brightgreen)](https://nodejs.org)
+[![npm version](https://img.shields.io/badge/npm-install--global-blue)](https://www.npmjs.com/package/sakitamanler-ccl-launcher)
 
-## 前言
+[English](./README_EN.md) | 简体中文
 
-在 Coding Agent 领域，目前 Claude Code 还是当之无愧的王者，谁能想到一个 cli 工具，竟然把之前的领头羊 Cursor 干得半死不活（还不是蓄意针对的前提下）。
+</div>
 
-可惜，Claude Code 虽好，却有两个无法忽视的缺憾（对中国开发者来说）：
+---
 
-1. 模型锁定，官方只支持 Anthropic 家的 Claude 系列模型（好用真好用，但是也真不便宜）；
-2. Anthropic 对中国开发者非常不友好，具体情况我就不说了，懂的都懂；
+## 📖 项目简介
 
-我当然知道 `claude-code-router` 项目，它很棒，几乎可以代理和桥接任何模型，甚至可以高度定制模型路由器，给开发者带来了更多选择，本人也曾受益于这个项目，非常感谢作者。
+`ccl` (Claude Code Launcher) 是一个强大的 Claude Code 模型启动器，让您可以轻松切换使用不同的 AI 模型作为 Claude Code 的后端。
 
-然而，现在环境正在起变化，进入 2025 年下半年，国产开源编程大模型先后爆发，智谱GLM、Kimi K2、DeepSeek、MiniMax M2，这几个优秀代表，已经可以挑战业界公认的最佳编程模型 Claude 系列，虽然暂时还没有完成超越，但是成为平替已经毫无问题。
+### 💡 二次开发说明
 
-更重要的是，截至目前[2025.12]，这几家都直接提供了 Anthropic 兼容 api 接口（如果还有更多家这样做的请让我知道），甚至还推出了专门面向程序员的编程套餐，这也就意味着这几家供应商官方下场支持自家模型成为 Claude Code 的后端模型，实测结果也非常优秀，且价格便宜。
+本项目基于以下两个优秀开源项目进行二次开发和优化：
 
-[更新] 2025.12.05：截至目前，已经特别对 Claude Code 进行了适配的有以下几家国内优秀模型，ccl 均已支持：
+- 🌟 **[claude-code-launcher](https://github.com/FullStackPlayer/claude-code-launcher)** - 核心功能框架，提供多模型切换能力
+- 📦 **[ccl-cli](https://github.com/FullStackPlayer/ccl-cli)** - CLI 安装器架构，支持全局命令安装
 
-- GLM-4.6
-- MiniMax-M2
-- DeepSeek-3.2
-- Kimi-K2-thinking-turbo
+在原项目基础上，本项目进行了以下改进：
 
-在上述背景下，我选择直接给 Claude Code 接入这几家的官方 api 使用，付费尽管微薄，却也是对这些优秀开源企业的认可和支持。并且从逻辑上来讲，官方出手对 Claude Code 进行适配，效果应该会好于 claude-code-router 逆向再适配的方式，还可以获得官方同步的 BUG 修复和更新。
+- ✨ 优化了配置管理体验
+- 🎨 改进了用户交互界面
+- 🔧 增强了跨平台兼容性
+- 📚 完善了文档和使用说明
 
-然而我又开始面临另一个烦恼，有时候你需要同时启动几个不同后端模型的 Claude Code 进程，或者尝试切换使用不同模型的进程来解决棘手的问题，说难不难，用命令行设定环境变量而已，但也真的繁琐，不丝滑，作为一个懒人，很难接受这种类似梗阻的体验。
+---
 
-于是就有了这个项目，下面统一简称 ccl。
+## 🎯 为什么需要 ccl？
 
-## 鸣谢
+### Claude Code 的缺憾
 
-阿里出品的 Qoder 帮我完成了这个项目的绝大多数代码，为我节省了很多时间，表现堪称经验，值得推荐给大家！
+在 Coding Agent 领域，**Claude Code** 是当之无愧的王者。但对中国开发者来说，它有两个无法忽视的缺憾：
 
-## 功能特点
+1. **模型锁定** - 官方只支持 Anthropic 自家的 Claude 系列模型（好用但昂贵）
+2. **地域限制** - Anthropic 对中国开发者不够友好
 
-- 🚀 支持多个国内优秀的 AI 模型（目前是智谱GLM、MiniMax M2、DeepSeek、Kimi K2）
-- 🖥️ 美观的交互式 TUI 模型选择界面
-- 🎯 命令行参数快速直达
+### 国产大模型的崛起
+
+🎉 **好消息是**：2025 年下半年，国产开源编程大模型迎来爆发式发展！
+
+- 🏆 **智谱 GLM** - GLM-4.7 性能卓越
+- 🚀 **MiniMax M2** - M2.1 代码能力出色
+- 💎 **DeepSeek** - V3.2 物超所值
+- 🌙 **Kimi K2** - 思考链模型独具特色
+
+更重要的是，这些厂商都**官方提供了 Anthropic 兼容 API 接口**，并推出了程序员专属套餐！这意味着：
+
+- ✅ 官方下场支持 Claude Code
+- ✅ 效果优于第三方适配
+- ✅ 价格仅为 Claude 的零头
+- ✅ 同步获得官方 BUG 修复
+
+### ccl 的使命
+
+虽然通过环境变量可以切换模型，但每次都要手动设置非常繁琐。**ccl 应运而生**，让模型切换变得丝滑顺畅：
+
+- 🎯 一条命令切换不同模型
+- 🖥️ 美观的交互式选择界面
 - ⚙️ 灵活的配置文件管理
-- 🔄 跨平台支持（Windows, macOS, Linux）
-- 📦 单文件可执行程序（支持一键安装成系统命令）
-- 📚 支持快捷单次请求输出（一行命令让 Claude Code 使用指定模型解答单个问题并输出结果）
-- 🛠️ 设定工作路径（可以更加灵活的充当 agent tool 角色）
+- 📦 支持单次请求快速输出
 
-## 安装要求
+---
 
-在使用 ccl 之前，请确保电脑已经安装了 Nodejs，然后使用 npm 全局安装 Claude Code：
+## ✨ 功能特点
+
+| 特性 | 说明 |
+|:---:|:---|
+| 🤖 | **多模型支持** - GLM-4.7、MiniMax-M2.1、DeepSeek-3.2、Kimi-K2 |
+| 🎨 | **交互式 TUI** - 美观的选择界面，体验丝滑 |
+| ⚡ | **命令行直达** - 支持 `--provider` 参数快速启动 |
+| 📝 | **单次请求** - 让 Claude 解答问题并保存结果 |
+| 🔄 | **跨平台支持** - Windows、macOS、Linux 全覆盖 |
+| 📦 | **全局安装** - 安装成系统命令，随处可用 |
+| 🛠️ | **工作目录** - 灵活指定工作路径 |
+| ⚙️ | **灵活配置** - JSON 配置文件，一目了然 |
+
+---
+
+## 🚀 快速开始
+
+### 安装
 
 ```bash
+# 方式一：通过 npm 全局安装（推荐）
+npm install -g sakitamanler-ccl-launcher
+
+# 方式二：本地开发
+git clone <your-repo-url>
+cd claude-code-launcher
+bun install
+```
+
+### 前置要求
+
+在使用 ccl 之前，请确保已安装：
+
+```bash
+# 安装 Node.js（如未安装）
+# 访问 https://nodejs.org 下载安装
+
+# 安装 Claude Code
 npm install -g @anthropic-ai/claude-code
 ```
 
-**注意**：安装的包名是 `@anthropic-ai/claude-code`，但启动命令是 `claude`。
+> 💡 **提示**：如果未安装 Claude Code，ccl 会尝试自动为您安装。
 
-万一你还没有安装 claude 就启动了 ccl 也没事儿，它会尝试为你自动安装。
+### 基本使用
 
-## 配置文件
+```bash
+# 交互式选择模型（推荐新手）
+ccl
 
-ccl 首次执行会在可执行文件同级目录（ts 脚本模式则是入口 ts 文件的同级目录）下创建一个 `ccl.config.json` 配置文件，内容非常一目了然，你只需要将你要用的 provider 下 auth_token 参数替换成自己从服务商那里获取的 API Key 即可，理论上还可以自由添加新的 provider，只要它支持 Anthropic 接口协议即可。
+# 指定模型直接启动
+ccl --provider=GLM-4.7
 
-**注意 additionalOTQP 配置**
+# 查看版本号
+ccl --version
 
-`additionalOTQP`（一次性请求提示词）是一个可选的全局配置项，允许你定义用户自定义的提示词，它会在每个单次请求时自动追加到预设的提示词后面。这个功能特别适用于为特定模型单次请求补充统一要求的场景，例如：
+# 查看帮助信息
+ccl --help
 
-- 指定回复语言（如"请使用中文回复"）
-- 添加特定格式要求（如"请在回复中包含'Claude Code'字样"）
-- 设置特定的行为规范（如"请不要使用代码块格式"）
+# 显示配置文件路径
+ccl --config-file
+```
 
-示例配置：
+---
+
+## 📋 支持的模型
+
+| Provider | 模型 | 开发商 | 相关文档 |
+|:---:|:---:|:---:|:---:|
+| **GLM-4.7** | 智谱 GLM-4.7 | 智谱 AI | [查看文档](https://docs.bigmodel.cn/cn/guide/develop/claude) |
+| **MiniMax-M2.1** | MiniMax M2.1 | MiniMax | [查看文档](https://platform.minimaxi.com/docs/guides/text-ai-coding-tools) |
+| **DeepSeek-3.2** | DeepSeek V3.2 | 深度求索 | [查看文档](https://api-docs.deepseek.com/zh-cn/guides/anthropic_api) |
+| **Kimi-K2** | Kimi K2 | 月之暗面 | [查看文档](https://platform.moonshot.cn/docs/guide/agent-support) |
+
+> 💬 **发现新模型**？如果发现其他国产模型也支持 Anthropic API，欢迎提交 PR 告诉我们！
+
+---
+
+## ⚙️ 配置文件
+
+### 首次运行
+
+ccl 首次运行会在可执行文件同级目录下创建 `ccl.config.json` 配置文件。
+
+### 配置说明
+
 ```json
 {
-  "additionalOTQP": "请使用中文回复，并在回复中包含'Claude Code'字样。",
-  // ... 其他配置
+  "providers": {
+    "GLM-4.7": {
+      "description": "智谱最新模型",
+      "base_url": "https://open.bigmodel.cn/api/anthropic",
+      "auth_token": "YOUR_API_KEY_HERE"
+    },
+    "MiniMax-M2.1": {
+      "description": "MiniMax M2.1 模型",
+      "base_url": "https://api.minimax.chat/v1",
+      "auth_token": "YOUR_API_KEY_HERE"
+    },
+    "DeepSeek-3.2": {
+      "description": "DeepSeek V3.2 模型",
+      "base_url": "https://api.deepseek.com",
+      "auth_token": "YOUR_API_KEY_HERE"
+    },
+    "Kimi-K2": {
+      "description": "Kimi K2 模型",
+      "base_url": "https://api.moonshot.cn/v1",
+      "auth_token": "YOUR_API_KEY_HERE"
+    }
+  },
+  "default_provider": "GLM-4.7",
+  "additionalOTQP": "请使用中文回答。"
 }
 ```
 
-## 使用方法
+### 配置项说明
 
-### Bun 支持下的 ts 脚本模式（跨平台通用）
+| 配置项 | 说明 |
+|:---|:---|
+| `providers` | 模型提供商配置 |
+| `description` | 模型描述信息 |
+| `base_url` | API 基础 URL |
+| `auth_token` | API 密钥（需替换为您自己的） |
+| `default_provider` | 默认使用的模型 |
+| `additionalOTQP` | 全局一次性请求提示词 |
 
-确保你的电脑已经安装了 bun 运行时，克隆当前仓库到本地，进入目录后执行：
+#### 📝 关于 additionalOTQP
 
-```bash
-# 安装依赖包
-bun install
+`additionalOTQP` (One-Time Query Prompt) 是一个可选的全局配置，允许您定义自定义提示词，它会在每个单次请求时自动追加到用户提示词后面。
 
-# 交互式选择 provider
-bun run start
+**使用场景：**
+- 指定回复语言（如"请使用中文回复"）
+- 添加特定格式要求
+- 设置行为规范
 
-# 使用指定 provider 直接运行，无需选择
-bun run start --provider=DeepSeek-3.2
+**示例：**
+```json
+{
+  "additionalOTQP": "请使用中文回复，并在回复中包含代码示例。"
+}
 ```
 
-### 使用可执行文件
+---
 
-#### 获得
+## 🎮 命令行参数
 
-1. 你可以到 release 页面下载可执行文件。
+### 指令类参数
 
-2. 也可以自己构建可执行文件，克隆仓库到本地后，在项目目录下执行：
+| 参数 | 说明 |
+|:---|:---|
+| `--provider=<provider>` | 指定要使用的模型名称（见配置文件） |
+| `--prompt=<prompt>` | 指定发送给 Claude Code 的提示词 |
+| `--output=<file>` | 指定输出文件路径（单次请求响应保存位置） |
+| `--pwd=<path>` | 指定工作目录路径 |
+
+### 响应类参数
+
+| 参数 | 简写 | 说明 |
+|:---|:---:|:---|
+| `--config-file` | `-cf` | 显示配置文件路径 |
+| `--version` | `-v` | 显示版本号 |
+| `--help` | `-h` | 显示帮助信息 |
+
+### 🎯 使用示例
 
 ```bash
-# 安装依赖
+# ===== 交互式使用 =====
+# 启动交互式选择界面
+ccl
+
+# ===== 指定模型启动 =====
+# 使用 GLM-4.7 启动 Claude Code
+ccl --provider=GLM-4.7
+
+# 使用 MiniMax-M2.1 启动
+ccl --provider=MiniMax-M2.1
+
+# ===== 单次请求（快速问答）=====
+# 让 Claude 使用 GLM-4.7 解答问题并保存结果
+ccl --provider=GLM-4.7 --prompt="写一个冒泡排序算法" --output=bubble_sort.md
+
+# 指定输出目录（自动创建不存在的目录）
+ccl --provider=DeepSeek-3.2 --prompt="解释 React Hooks" --output=docs/react-hooks.md
+
+# ===== 工作目录管理 =====
+# 在指定目录下启动 Claude Code
+ccl --provider=Kimi-K2 --pwd="../my-project"
+
+# ===== 查看信息 =====
+# 查看配置文件路径
+ccl --config-file
+
+# 查看版本号
+ccl --version
+```
+
+---
+
+## 🔧 本地开发
+
+### 开发环境设置
+
+```bash
+# 1. 克隆仓库
+git clone <your-repo-url>
+cd claude-code-launcher
+
+# 2. 安装依赖
 bun install
 
+# 3. 开发模式（支持热重载）
+bun run dev
+
+# 4. 运行测试
+bun test
+```
+
+### 构建可执行文件
+
+```bash
 # 构建所有平台
 bun run build:all
 
 # 构建特定平台
-bun run build:linux:x64
-bun run build:darwin:arm64
-bun run build:darwin:x64
-bun run build:win32:x64
+bun run build:win32:x64      # Windows x64
+bun run build:linux:x64      # Linux x64
+bun run build:darwin:x64     # macOS Intel
+bun run build:darwin:arm64   # macOS Apple Silicon
 ```
 
-#### 运行
-
-**macOS & linux**
-
-```
-# 交互式选择
-./dist/darwin/arm64/ccl
-
-# 指定 provider
-./dist/darwin/arm64/ccl --provider=GLM-4.6
-```
-
-为了方便随时使用，推荐你将 ccl 安装成为当前系统命令，我提供了一个专门的包来实现它，请执行 `npm install -g ccl-cli-installer` 进行安装。
-
-**windows**
-
-windows 用户可以通过两种方式：
-
-1. 下载后解压出 `ccl.exe` 直接双击运行即可；
-2. 在 PowerShell 中执行 `.\ccl.exe` 命令，当然也可以加上 `--provider=xxx` 参数（参见配置文件中的 provider 名称）直接以指定模型启动；
-
-### 命令行参数
-
-ccl 支持以下命令行参数：
-
-```bash
-# 指令类参数
---provider=<provider>  指定要使用的 provider name，参见配置文件 providers 节点
---prompt=<prompt>      指定要发送给 Claude Code 的提示词
---output=<file>        指定输出文件名或路径名，单次请求的响应将被保存到该文件中
---pwd=<path>           指定工作目录路径
-
-# 响应类参数
---config-file, -cf     返回配置文件路径
---version, -v          显示版本号
---help, -h             显示帮助信息
-```
-
-当使用 `--output` 参数时，ccl 会自动为文件名添加时间戳后缀，以防止文件同名覆盖。如果输出路径包含目录部分，ccl 会自动检查目录是否存在，不存在则创建目录。
-
-示例：
-```bash
-# 使用指定 provider 并将输出保存到文件
-./ccl --provider=GLM-4.6 --prompt="写一个Hello World程序" --output=hello_js.md
-
-# 输出到带目录的路径
-./ccl --provider=GLM-4.6 --prompt="写一个Hello World程序" --output=output/hello_js.md
-
-# 改变工作目录
-./ccl --pwd="../"
-
-# 显示版本号
-./ccl --version
-
-# 显示帮助信息
-./ccl --help
-```
-
-## 支持的模型
-
-| Provider     | 描述          | 相关文档                                                         |
-| ------------ | ------------- | ---------------------------------------------------------------- |
-| GLM-4.6      | 智谱 GLM-4.6  | [文档](https://docs.bigmodel.cn/cn/guide/develop/claude)         |
-| MiniMax-M2   | MiniMax M2    | [文档](https://platform.minimaxi.com/docs/guides/text-ai-coding-tools)         |
-| DeepSeek-3.2 | DeepSeek V3.2 | [文档](https://api-docs.deepseek.com/zh-cn/guides/anthropic_api) |
-| Kimi-K2      | Kimi K2       | [文档](https://platform.moonshot.cn/docs/guide/agent-support)    |
-
-如有同学发现新的国产模型也官方支持了 Anthropic API，欢迎告诉我。
-
-## 开发
-
-```
-# 安装依赖
-bun install
-
-# 运行开发模式
-bun run dev
-
-# 运行测试
-bun test
-
-# 启动应用
-bun run start
-```
-
-## 项目结构
+### 项目结构
 
 ```
 claude-code-launcher/
-├── .gitignore            # Git 忽略文件配置
-├── .vscode/              # VS Code 编辑器配置
-│   └── settings.json     # VS Code 设置
-├── DevInstruction.md     # 开发指南文档
-├── Documents/            # 文档目录
-│   ├── Releases.md       # 发布日志
-│   ├── Requirements.md   # 项目需求文档
-│   └── TechStacks.md     # 技术栈说明
-├── LICENSE               # 开源许可证
-├── README.md             # 项目说明文档
-├── bun.lock              # Bun 依赖锁文件
-├── package.json          # 项目配置文件
-├── tsconfig.json         # TypeScript 配置文件
-├── releases/             # 发布文件目录
-│   └── release2gh.sh     # GitHub Release 发布脚本
-├── scripts/              # 构建脚本目录
-│   └── build.ts          # 构建脚本
-├── src/                  # 源代码目录
-│   ├── index.ts          # 主程序入口
-│   ├── types.ts          # 类型定义
-│   ├── utils.ts          # 工具函数
+├── .gitignore              # Git 忽略配置
+├── .vscode/                # VS Code 编辑器配置
+│   └── settings.json       # 编辑器设置
+├── DevInstruction.md       # 开发指南
+├── Documents/              # 文档目录
+│   ├── Releases.md         # 发布日志
+│   ├── Requirements.md     # 需求文档
+│   └── TechStacks.md       # 技术栈说明
+├── LICENSE                 # MIT 开源许可证
+├── README.md               # 项目说明文档
+├── bun.lock                # Bun 依赖锁文件
+├── package.json            # 项目配置文件
+├── tsconfig.json           # TypeScript 配置
+├── publish.sh              # 发布脚本
+├── scripts/                # 构建脚本
+│   └── build.ts            # 构建逻辑
+├── src/                    # 源代码目录
+│   ├── index.ts            # 程序入口
+│   ├── types.ts            # 类型定义
+│   ├── utils.ts            # 工具函数
 │   └── types/
-│       └── prompts.d.ts  # prompts 库类型定义
-└── test/                 # 测试目录
-    ├── bun-spawn.test.ts # Bun.spawn 测试
-    ├── command.test.ts   # 命令行参数测试
-    ├── launch.test.ts    # 启动功能测试
-    ├── tty-state.test.ts # TTY 状态测试
-    └── utils.test.ts     # 工具函数测试
+│       └── prompts.d.ts    # prompts 库类型定义
+├── test/                   # 测试目录
+│   ├── bun-spawn.test.ts   # Bun.spawn 测试
+│   ├── command.test.ts     # 命令行参数测试
+│   ├── launch.test.ts      # 启动功能测试
+│   ├── tty-state.test.ts   # TTY 状态测试
+│   └── utils.test.ts       # 工具函数测试
+└── packages/               # npm 包目录
+    ├── installer/          # 主安装器包
+    │   ├── index.js
+    │   ├── package.json
+    │   └── bin/
+    │       └── ccl
+    └── win32-x64/          # Windows 子包
+        ├── package.json
+        └── ccl.exe
 ```
+
+---
+
+## 📦 发布到 npm
+
+### 准备工作
+
+1. 确保 `package.json` 中的版本号已更新
+2. 构建所有平台的可执行文件
+3. 测试功能是否正常
+
+### 发布步骤
+
+```bash
+# 1. 运行发布脚本
+bash publish.sh
+
+# 2. 或手动发布各个包
+cd packages/installer
+npm publish
+cd ../win32-x64
+npm publish
+```
+
+---
+
+## 🤝 鸣谢
+
+### 特别感谢
+
+- 🙏 **[阿里 Qoder](https://qoder.ai/)** - 帮助完成了项目绝大部分代码，表现堪称典范！
+- 🌟 **[FullStackPlayer](https://github.com/FullStackPlayer)** - 原始项目作者，提供了优秀的架构设计
+- 💪 **Anthropic 团队** - 打造了如此出色的 Claude Code 工具
+
+### 支持的模型提供商
+
+感谢以下国产 AI 厂商提供 Anthropic 兼容 API：
+
+- 🏢 [智谱 AI](https://www.zhipuai.cn/) - GLM 系列模型
+- 🚀 [MiniMax](https://www.minimaxi.com/) - M2 系列模型
+- 💎 [深度求索](https://www.deepseek.com/) - DeepSeek 系列模型
+- 🌙 [月之暗面](https://www.moonshot.cn/) - Kimi 系列模型
+
+---
+
+## 📄 License
+
+MIT License
+
+Copyright (c) 2025-present
+
+---
+
+## 📞 联系方式
+
+- 🐛 **问题反馈**：[提交 Issue](https://github.com/your-username/claude-code-launcher/issues)
+- 💡 **功能建议**：[提交 Discussion](https://github.com/your-username/claude-code-launcher/discussions)
+- 📧 **邮件联系**：your-email@example.com
+
+---
+
+<div align="center">
+
+**如果这个项目对您有帮助，请给个 ⭐ Star 支持一下！**
+
+Made with ❤️ by the Claude Code Launcher Team
+
+</div>
