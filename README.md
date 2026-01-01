@@ -18,7 +18,11 @@
 
 **ccl** (Claude Code Launcher) 是一个强大的 Claude Code 模型启动器，让你可以轻松切换使用不同的 AI 模型作为 Claude Code 的后端。
 
-本项目基于 **[claude-code-launcher](https://github.com/FullStackPlayer/claude-code-launcher)** 进行二次开发，添加了 Qwen3-Coder 支持、优化了交互界面和用户体验。
+本项目基于以下两个优秀开源项目进行二次开发：
+- **[claude-code-launcher](https://github.com/FullStackPlayer/claude-code-launcher)** - 核心功能框架
+- **[ccl-cli](https://github.com/FullStackPlayer/ccl-cli)** - CLI 安装器架构
+
+在原项目基础上，添加了 Qwen3-Coder 支持、优化了交互界面和用户体验。
 
 ```
 npm install -g sakitamanler-ccl-launcher
