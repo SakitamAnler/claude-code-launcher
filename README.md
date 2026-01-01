@@ -22,7 +22,7 @@
 - **[claude-code-launcher](https://github.com/FullStackPlayer/claude-code-launcher)** - 核心功能框架
 - **[ccl-cli](https://github.com/FullStackPlayer/ccl-cli)** - CLI 安装器架构
 
-在原项目基础上，添加了 Qwen3-Coder 支持、优化了交互界面和用户体验。
+运行以下两条命令即可使用，推荐使用modelscope生成访问令牌，一天拥有2000次免费调用https://www.modelscope.cn/docs/accounts/token。
 
 ```
 npm install -g sakitamanler-ccl-launcher
@@ -71,16 +71,7 @@ ccl  # 交互式选择模型
 
 ---
 
-## 🚀 快速开始
-
-### 安装
-
-```bash
-# 通过 npm 全局安装（推荐）
-npm install -g sakitamanler-ccl-launcher
-```
-
-### 更新
+### 🚀更新
 
 ```bash
 # 强制重新安装最新版本
@@ -128,9 +119,9 @@ ccl --version
 
 ---
 
-## ⚙️ 配置文件
+## ⚙️ 如何使用（配置文件）
 
-首次运行会在可执行文件同级目录下创建 `ccl.config.json`：
+首次运行ccl命令会在可执行文件同级目录下创建 `ccl.config.json`：
 
 ```json
 {
@@ -167,7 +158,7 @@ ccl --version
 }
 ```
 
-> **提示**：请将 `auth_token` 替换为您自己的 API 密钥。
+> **提示**：请进入程序生成的目录将 `auth_token` 替换为您自己的 API 密钥。
 
 ---
 
