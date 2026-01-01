@@ -11,7 +11,7 @@ import {
   getCurrentDir,
   applyProviderToSettings,
   UI,
-} from "./utils.build.js";
+} from "./utils.js";
 import prompts from "prompts";
 import chalk from "chalk";
 
@@ -26,44 +26,7 @@ async function main(): Promise<void> {
     // console.log('程序参数：', process.argv)
     const argsResult = parseArgs();
 
-    // 0. 检查是否是启动模式选择器（此时程序是以子进程方式来运行的）
-    if (argsResult.launchModeSelector === "true") {
-      // 这个已经在主程序底部处理了，这里只是为了防止继续执行
-      return;
-    }
-
-    // 1. 检查是否是 TUI 选择器模式（此时程序是以子进程方式来运行的）
-    const args = process.argv.slice(2);
-    // 启动 tui 选择器
-    if (argsResult.tuiSelector === "true") {
-      try {
-        // TUI 选择器模式（--tui-selector 参数后必然有 json 配置）
-        const configJson = args[1];
-        if (configJson) {
-          // 解析 json 内容
-          const config = JSON.parse(configJson);
-          // 此时程序已经在独立子进程中，所以直接运行 TUI 界面获取选中的模型即可
-          const selectedProvider = await runTUISelector(config);
-          if (selectedProvider) {
-            // 检测退出选项
-            if (selectedProvider === "EXIT") {
-              // 返回代码2给主进程，让主进程也退出
-              process.exit(2);
-            }
-            process.stdout.write(selectedProvider);
-            process.exit(0);
-          } else {
-            process.exit(1);
-          }
-        } else {
-          process.exit(1);
-        }
-      } catch (err: any) {
-        console.error(err);
-      }
-    }
-
-    // 2. 检查 Claude Code 是否已安装
+    // 1. 检查 Claude Code 是否已安装
     UI.printStep(1, 4, "检查 Claude Code 是否已安装");
     const isInstalled = await checkClaudeCodeInstalled();
 
@@ -75,7 +38,7 @@ async function main(): Promise<void> {
 
     UI.printSuccessBox("Claude Code 已安装");
 
-    // 3. 加载和验证配置文件
+    // 2. 加载和验证配置文件
     UI.printStep(2, 4, "加载配置文件");
     const config = loadConfig();
     // 如果配置文件加载失败（null），则停止程序运行
@@ -142,7 +105,8 @@ async function main(): Promise<void> {
 
         // 处理返回上一级
         if (launchMode === "back") {
-          // 重新选择 provider，继续循环
+          // 清空 selectedProvider，重新选择 provider
+          selectedProvider = '';
           continue;
         }
 
@@ -190,74 +154,6 @@ async function main(): Promise<void> {
   }
 }
 
-// 直接运行 TUI 选择器界面（此时代码运行在一个独立子进程中）
-async function runTUISelector(config: any): Promise<string | null> {
-  try {
-    // 保存原始的 stdout
-    const originalStdout = process.stdout.write;
-
-    // 重定向 prompts 的输出到 stderr
-    process.stdout.write = function (
-      chunk: any,
-      encoding?: any,
-      callback?: any
-    ) {
-      return process.stderr.write(chunk, encoding, callback);
-    };
-
-    const providerNames = Object.keys(config.providers);
-
-    // 确定默认选中项
-    let defaultIndex = 0;
-    if (config.default_provider && config.providers[config.default_provider]) {
-      defaultIndex = providerNames.indexOf(config.default_provider);
-    }
-
-    const choices = providerNames.map((name: string, index: number) => ({
-      title: name,
-      description: `${config.providers[name].description}`,
-      value: name,
-    }));
-
-    // 增加一个退出选项
-    choices.push({
-      title: "退出",
-      description: "放弃执行 Claude Code",
-      value: "EXIT",
-    });
-    
-    const response = await prompts(
-      {
-        type: "select",
-        name: "provider",
-        message: "选择 provider:",
-        choices,
-        initial: defaultIndex,
-        stdout: process.stderr, // 将 prompts 输出重定向到 stderr（因为 prompts 输出的是一个 TUI 界面，如果它输出到 stdout，用户就无法看见了）
-      },
-      {
-        onCancel: () => {
-          // 用户按 Ctrl+c 取消了选择
-          process.exit(1);
-        },
-      }
-    );
-
-    // 恢复原始的 stdout
-    process.stdout.write = originalStdout;
-
-    if (response.provider) {
-      return response.provider;
-    }
-  } catch (error) {
-    console.error(error);
-    // TUI 选择出错
-    return null;
-  }
-
-  return null;
-}
-
 // 以交互界面形式选择 provider，返回选择的 provider 名称
 async function selectProviderInteractively(config: any): Promise<string> {
   const providerNames = Object.keys(config.providers);
@@ -278,61 +174,53 @@ async function selectProviderInteractively(config: any): Promise<string> {
 
   Logger.info("请选择要使用的 provider:");
 
-  // 方案1：使用子进程方式自己运行自己（可执行文件），但以 TUI 模式运行
+  // 直接在当前进程中使用 prompts 选择 provider（避免 Windows 子进程问题）
   try {
-    // 获取当前可执行文件的路径
-    const currentExecutable = process.execPath;
-    const args = [currentExecutable];
-    // 如果是脚本执行方式，要添加脚本路径作为第2个参数（兼容开发调试模式）
-    if (!isExecutable()) {
-      args.push(import.meta.path);
-    }
-    // 添加参数指明要以 TUI 形式让用户选择 provider
-    args.push("--tui-selector");
-    // 添加配置文件内容作为第3个参数（兼容 TUI 选择器模式）
-    args.push(JSON.stringify(config));
+    const choices = providerNames.map((name: string) => ({
+      title: name,
+      description: `${config.providers[name].description}`,
+      value: name,
+    }));
 
-    // console.log('当前可执行文件：', currentExecutable)
+    // 增加一个退出选项
+    choices.push({
+      title: "退出",
+      description: "退出应用程序",
+      value: "EXIT",
+    });
 
-    // 启动子进程
-    const proc = Bun.spawn(
-      args,
+    const response = await prompts(
       {
-        stdout: "pipe",
-        stderr: "inherit",
-        stdin: "inherit",
+        type: "select",
+        name: "provider",
+        message: "选择 provider:",
+        choices,
+        initial: defaultIndex,
+      },
+      {
+        onCancel: () => {
+          // 用户按 Ctrl+c 取消了选择
+          process.exit(1);
+        },
       }
     );
 
-    // 等待子进程输出并退出
-    const output = await new Response(proc.stdout).text();
-    const exitCode = await proc.exited;
-
-    // 如果子进程成功退出且有输出，则使用输出作为选择的 provider
-    if (exitCode === 0 && output.trim() && config.providers[output.trim()]) {
-      const selectedProvider = output.trim();
-      // Logger.success(`使用 TUI 选择了 provider: ${selectedProvider}`);
-      return selectedProvider;
-    } else if (exitCode === 1) {
-      // 用户主动退出整个应用程序
-      Logger.info("用户退出应用程序");
-      process.exit(1);
-    } else if (exitCode === 2) {
-      // 用户选择了“退出”选项，优雅退出整个应用程序
-      Logger.info("用户选择退出应用程序");
-      process.exit(0);
-    } else {
-      Logger.warning("TUI 隔离进程失败");
+    if (response.provider) {
+      if (response.provider === "EXIT") {
+        Logger.info("用户选择退出应用程序");
+        process.exit(0);
+      }
+      return response.provider;
     }
   } catch (error) {
-    Logger.warning(`TUI 隔离进程出错: ${error}`);
+    Logger.warning(`TUI 选择出错: ${error}`);
   }
 
-  // 方案 2: 回退到默认选项
+  // 回退到默认选项
   const fallbackProvider =
     providerNames[defaultIndex] || providerNames[0] || "glm-4.5";
   Logger.warning(
-    `所有交互式方案失败，回退到默认 provider: ${fallbackProvider}`
+    `交互式选择失败，回退到默认 provider: ${fallbackProvider}`
   );
   return fallbackProvider;
 }
@@ -345,47 +233,8 @@ async function selectLaunchMode(): Promise<string> {
     return "temp";
   }
 
-  // 使用子进程方式运行 TUI
+  // 直接在当前进程中使用 prompts 选择启动模式（避免 Windows 子进程问题）
   try {
-    const currentExecutable = process.execPath;
-    const args = [currentExecutable];
-    if (!isExecutable()) {
-      args.push(import.meta.path);
-    }
-    args.push("--launch-mode-selector");
-
-    const proc = Bun.spawn(args, {
-      stdout: "pipe",
-      stderr: "inherit",
-      stdin: "inherit",
-    });
-
-    const output = await new Response(proc.stdout).text();
-    const exitCode = await proc.exited;
-
-    if (exitCode === 0 && output.trim()) {
-      const mode = output.trim();
-      if (mode === "permanent" || mode === "temp") {
-        return mode;
-      }
-    }
-  } catch (error) {
-    Logger.warning(`启动模式选择失败: ${error}`);
-  }
-
-  // 回退到临时模式
-  Logger.warning("模式选择器启动失败，使用临时模式");
-  return "temp";
-}
-
-// 启动模式选择器（独立子进程）
-async function runLaunchModeSelector(): Promise<void> {
-  try {
-    const originalStdout = process.stdout.write;
-    process.stdout.write = function (chunk: any, encoding?: any, callback?: any) {
-      return process.stderr.write(chunk, encoding, callback);
-    };
-
     const response = await prompts(
       {
         type: "select",
@@ -414,7 +263,6 @@ async function runLaunchModeSelector(): Promise<void> {
           },
         ],
         initial: 0,
-        stdout: process.stderr,
       },
       {
         onCancel: () => {
@@ -423,22 +271,16 @@ async function runLaunchModeSelector(): Promise<void> {
       }
     );
 
-    process.stdout.write = originalStdout;
-
     if (response.mode) {
-      process.stdout.write(response.mode);
-      process.exit(0);
+      return response.mode;
     }
   } catch (error) {
-    console.error(error);
-    process.exit(1);
+    Logger.warning(`启动模式选择失败: ${error}`);
   }
-}
 
-// 处理启动模式选择器参数
-if (process.argv.includes("--launch-mode-selector")) {
-  await runLaunchModeSelector();
-  process.exit(0);
+  // 回退到临时模式
+  Logger.warning("模式选择失败，使用临时模式");
+  return "temp";
 }
 
 // 启动主程序

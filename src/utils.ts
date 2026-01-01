@@ -47,21 +47,15 @@ export class UI {
 
   // 打印成功框
   static printSuccessBox(message: string): void {
-    const line = "─".repeat(Math.max(40, message.length + 4));
     console.log("");
-    console.log(chalk.green("┌─ " + line + "─┐"));
-    console.log(chalk.green("│") + "  " + chalk.white("✓") + " " + message + " ".repeat(Math.max(0, 45 - message.length)) + chalk.green("│"));
-    console.log(chalk.green("└" + "─".repeat(message.length + 4) + "─┘"));
+    console.log(chalk.green("  ✓ " + message));
     console.log("");
   }
 
   // 打印信息框
   static printInfoBox(message: string): void {
-    const line = "─".repeat(Math.max(40, message.length + 4));
     console.log("");
-    console.log(chalk.blue("┌─ " + line + "─┐"));
-    console.log(chalk.blue("│") + "  " + chalk.white("ℹ") + " " + message + " ".repeat(Math.max(0, 45 - message.length)) + chalk.blue("│"));
-    console.log(chalk.blue("└" + "─".repeat(message.length + 4) + "─┘"));
+    console.log(chalk.blue("  ℹ " + message));
     console.log("");
   }
 
