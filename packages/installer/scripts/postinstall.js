@@ -45,7 +45,7 @@ try {
   console.log(`🔧 正在安装 ${packageName}...`);
 
   // 尝试安装平台包
-  execSync(`npm install -g ${packageName}@1.0.5`, {
+  execSync(`npm install -g ${packageName}@1.0.6`, {
     stdio: 'inherit'
   });
 
