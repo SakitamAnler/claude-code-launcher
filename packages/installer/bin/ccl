@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const process = require('process');
 const path = require('path');
 
@@ -16,11 +16,18 @@ function getTargetCommand() {
       return 'ccl-darwin-x64';
     case 'linux-x64':
       return 'ccl-linux-x64';
-    case 'win32-x64':
+    case 'win32-x64': {
       // Windows 下直接使用 ccl.exe
-      const pkgPath = path.join(__dirname, '..', 'node_modules', 'sakitamanler-ccl-win32');
-      const exePath = path.join(pkgPath, 'ccl.exe');
-      return exePath;
+      // 获取 npm 全局 node_modules 路径
+      try {
+        const npmRoot = execSync('npm root -g', { encoding: 'utf-8' }).trim();
+        const pkgPath = path.join(npmRoot, 'sakitamanler-ccl-win32');
+        const exePath = path.join(pkgPath, 'ccl.exe');
+        return exePath;
+      } catch (error) {
+        throw new Error('Failed to locate npm global directory. Please ensure npm is properly installed.');
+      }
+    }
     default:
       throw new Error(`Unsupported platform: ${platform}-${arch}`);
   }
