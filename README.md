@@ -366,26 +366,6 @@ npm publish
 ```
 
 ---
-
-## 🤝 鸣谢
-
-### 特别感谢
-
-- 🙏 **[阿里 Qoder](https://qoder.ai/)** - 帮助完成了项目绝大部分代码，表现堪称典范！
-- 🌟 **[FullStackPlayer](https://github.com/FullStackPlayer)** - 原始项目作者，提供了优秀的架构设计
-- 💪 **Anthropic 团队** - 打造了如此出色的 Claude Code 工具
-
-### 支持的模型提供商
-
-感谢以下国产 AI 厂商提供 Anthropic 兼容 API：
-
-- 🏢 [智谱 AI](https://www.zhipuai.cn/) - GLM 系列模型
-- 🚀 [MiniMax](https://www.minimaxi.com/) - M2 系列模型
-- 💎 [深度求索](https://www.deepseek.com/) - DeepSeek 系列模型
-- 🌙 [月之暗面](https://www.moonshot.cn/) - Kimi 系列模型
-
----
-
 ## 📄 License
 
 MIT License
