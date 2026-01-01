@@ -244,6 +244,13 @@ export function parseArgs(): Record<string, string> {
   const args = process.argv.slice(2);
   const result: Record<string, string> = {};
 
+  // 检查是否有 --launch-mode-selector 参数
+  const launchModeSelectorFlag = args.find((arg) => arg === "--launch-mode-selector");
+  if (launchModeSelectorFlag) {
+    result.launchModeSelector = "true";
+    return result;
+  }
+
   // 检查是否有 --tui-selector 参数
   const selectorFlag = args.find((arg) => arg === "--tui-selector");
   // 一旦有这个参数立刻返回（因为这个参数是程序自己添加上的，此时程序以子进程形式运行）
@@ -736,26 +743,22 @@ export function providerToSettings(provider: ProviderConfig): Record<string, any
 }
 
 /**
- * 应用 provider 配置到 Claude Code settings.json
+ * 应用 provider 配置到 Claude Code settings.json（永久模式）
+ * 直接覆盖，不备份
  */
-export function applyProviderToSettings(provider: ProviderConfig): {
-  success: boolean;
-  backupPath?: string;
-} {
-  // 1. 备份当前配置
-  const backupPath = backupClaudeSettings();
-
-  // 2. 转换 provider 配置
+export function applyProviderToSettings(provider: ProviderConfig): boolean {
+  // 转换 provider 配置
   const newSettings = providerToSettings(provider);
 
-  // 3. 写入 settings.json
+  // 写入 settings.json
   const success = writeClaudeSettings(newSettings);
 
   if (success) {
     Logger.success("已将 provider 配置写入 Claude Code settings.json");
+    Logger.info("现在可以直接使用 'claude' 命令启动 Claude Code");
   }
 
-  return { success, backupPath: backupPath || undefined };
+  return success;
 }
 
 /**

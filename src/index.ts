@@ -10,8 +10,6 @@ import {
   isExecutable,
   getCurrentDir,
   applyProviderToSettings,
-  restoreClaudeSettings,
-  cleanupBackup,
 } from "./utils.js";
 import prompts from "prompts";
 
@@ -23,7 +21,13 @@ async function main(): Promise<void> {
     // console.log('程序参数：', process.argv)
     const argsResult = parseArgs();
 
-    // 0. 检查是否是 TUI 选择器模式（此时程序是以子进程方式来运行的）
+    // 0. 检查是否是启动模式选择器（此时程序是以子进程方式来运行的）
+    if (argsResult.launchModeSelector === "true") {
+      // 这个已经在主程序底部处理了，这里只是为了防止继续执行
+      return;
+    }
+
+    // 1. 检查是否是 TUI 选择器模式（此时程序是以子进程方式来运行的）
     const args = process.argv.slice(2);
     // 启动 tui 选择器
     if (argsResult.tuiSelector === "true") {
@@ -54,7 +58,7 @@ async function main(): Promise<void> {
       }
     }
 
-    // 1. 检查 Claude Code 是否已安装
+    // 2. 检查 Claude Code 是否已安装
     Logger.info("检查 Claude Code 是否已安装");
     const isInstalled = await checkClaudeCodeInstalled();
 
@@ -66,7 +70,7 @@ async function main(): Promise<void> {
 
     Logger.success("检测到 Claude Code 已安装");
 
-    // 2. 加载和验证配置文件
+    // 3. 加载和验证配置文件
     Logger.info("加载配置文件...");
     const config = loadConfig();
     // 如果配置文件加载失败（null），则停止程序运行
@@ -80,7 +84,7 @@ async function main(): Promise<void> {
     else {
       Logger.success("配置文件加载成功");
 
-      // 3. 处理命令行参数
+      // 4. 处理命令行参数
       let selectedProvider = argsResult.provider || '';
       const prompt = argsResult.prompt || '';
       const output = argsResult.output || '';
@@ -112,35 +116,37 @@ async function main(): Promise<void> {
         selectedProvider = await selectProviderInteractively(config);
       }
 
-      // 4. 获取选中的 provider 配置
+      // 5. 获取选中的 provider 配置
       const providerConfig = config.providers[selectedProvider];
       if (!providerConfig) {
         Logger.error(`Provider "${selectedProvider}" 配置不存在`);
         process.exit(1);
       }
 
-      // 5. 应用 provider 配置到 settings.json
-      Logger.info(`正在应用 ${selectedProvider} 配置到 Claude Code...`);
-      const { success, backupPath } = applyProviderToSettings(providerConfig);
+      // 6. 选择启动模式
+      const launchMode = await selectLaunchMode();
 
-      if (!success) {
-        Logger.error("应用配置失败，程序终止");
-        process.exit(1);
-      }
+      if (launchMode === "permanent") {
+        // 永久模式：写入配置文件
+        Logger.info(`正在应用 ${selectedProvider} 配置到 Claude Code...`);
+        const success = applyProviderToSettings(providerConfig);
 
-      try {
-        // 6. 转换为环境变量（保持兼容性，但现在主要靠 settings.json）
+        if (!success) {
+          Logger.error("应用配置失败，程序终止");
+          process.exit(1);
+        }
+
+        Logger.success("配置已保存！现在可以直接使用 'claude' 命令启动 Claude Code");
+        Logger.info(`下次启动将默认使用 ${selectedProvider} 模型`);
+        Logger.info("");
+        Logger.info("如需切换到其他模型，请再次运行 ccl 命令");
+        process.exit(0);
+      } else {
+        // 临时模式：使用环境变量
+        Logger.info(`使用临时模式启动 ${selectedProvider}...`);
         const envVars = providerToEnvVars(providerConfig);
-        // 获取 additionalOTQP 配置
         const additionalOTQP = config.additionalOTQP || '';
         await launchClaudeCode(envVars, prompt, output, additionalOTQP);
-      } finally {
-        // 7. Claude Code 退出后恢复原始配置
-        if (backupPath) {
-          restoreClaudeSettings(backupPath);
-          // 清理备份文件
-          cleanupBackup(backupPath);
-        }
       }
     }
   } catch (error) {
@@ -296,6 +302,99 @@ async function selectProviderInteractively(config: any): Promise<string> {
     `所有交互式方案失败，回退到默认 provider: ${fallbackProvider}`
   );
   return fallbackProvider;
+}
+
+// 选择启动模式
+async function selectLaunchMode(): Promise<string> {
+  // 如果不是真实的 TTY 环境，直接返回临时模式
+  if (!process.stdin.isTTY) {
+    Logger.info("非交互式环境，使用临时模式");
+    return "temp";
+  }
+
+  // 使用子进程方式运行 TUI
+  try {
+    const currentExecutable = process.execPath;
+    const args = [currentExecutable];
+    if (!isExecutable()) {
+      args.push(import.meta.path);
+    }
+    args.push("--launch-mode-selector");
+
+    const proc = Bun.spawn(args, {
+      stdout: "pipe",
+      stderr: "inherit",
+      stdin: "inherit",
+    });
+
+    const output = await new Response(proc.stdout).text();
+    const exitCode = await proc.exited;
+
+    if (exitCode === 0 && output.trim()) {
+      const mode = output.trim();
+      if (mode === "permanent" || mode === "temp") {
+        return mode;
+      }
+    }
+  } catch (error) {
+    Logger.warning(`启动模式选择失败: ${error}`);
+  }
+
+  // 回退到临时模式
+  return "temp";
+}
+
+// 启动模式选择器（独立子进程）
+async function runLaunchModeSelector(): Promise<void> {
+  try {
+    const originalStdout = process.stdout.write;
+    process.stdout.write = function (chunk: any, encoding?: any, callback?: any) {
+      return process.stderr.write(chunk, encoding, callback);
+    };
+
+    const response = await prompts(
+      {
+        type: "select",
+        name: "mode",
+        message: "选择启动模式:",
+        choices: [
+          {
+            title: "临时模式（推荐）",
+            description: "使用环境变量启动，退出后不影响配置文件",
+            value: "temp",
+          },
+          {
+            title: "永久模式",
+            description: "写入配置文件，后续可直接用 claude 命令启动",
+            value: "permanent",
+          },
+        ],
+        initial: 0,
+        stdout: process.stderr,
+      },
+      {
+        onCancel: () => {
+          process.exit(1);
+        },
+      }
+    );
+
+    process.stdout.write = originalStdout;
+
+    if (response.mode) {
+      process.stdout.write(response.mode);
+      process.exit(0);
+    }
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+// 处理启动模式选择器参数
+if (process.argv.includes("--launch-mode-selector")) {
+  await runLaunchModeSelector();
+  process.exit(0);
 }
 
 // 启动主程序
