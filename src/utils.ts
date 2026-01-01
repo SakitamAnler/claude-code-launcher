@@ -13,30 +13,51 @@ const CONFIG_FILE_NAME = "ccl.config.json";
  * 界面美化工具
  */
 export class UI {
-  // 打印带边框的标题（支持两行）
+  // 打印艺术字标题
   static printTitle(title: string, subtitle?: string): void {
     console.log("");
-    console.log(chalk.cyan("╔" + "═".repeat(50) + "╗"));
+    console.log("");
+    console.log(chalk.magenta.bold(`
+  ███████╗██████╗ ███████╗███████╗██████╗
+  ██╔════╝██╔══██╗██╔════╝██╔════╝██╔══██╗
+  █████╗  ██████╔╝█████╗  █████╗  ██║  ██║
+  ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  ██║  ██║
+  ██║     ██║  ██║███████╗███████╗██████╔╝
+  ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝
+`));
+    console.log("");
+    console.log("");
 
-    // 第一行：主标题
-    const titlePadding = Math.floor((50 - title.length) / 2);
-    const titleLine = chalk.cyan("║") +
-      " ".repeat(Math.max(0, titlePadding)) +
-      chalk.bold.cyan(title) +
-      " ".repeat(Math.max(0, 50 - titlePadding - title.length)) +
-      chalk.cyan("║");
-    console.log(titleLine);
-
-    // 第二行：副标题
+    // 打印副标题
     if (subtitle) {
-      const subPadding = Math.floor((50 - subtitle.length) / 2);
-      const subLine = chalk.cyan("║") +
-        chalk.gray(" ".repeat(Math.max(0, subPadding)) + subtitle + " ".repeat(Math.max(0, 50 - subPadding - subtitle.length))) +
-        chalk.cyan("║");
-      console.log(subLine);
+      console.log(chalk.magenta("┌" + "─".repeat(56) + "┐"));
+      const subPadding = Math.floor((56 - subtitle.length - 2) / 2);
+      console.log(
+        chalk.magenta("│") +
+        chalk.gray(" ".repeat(Math.max(0, subPadding + 1))) +
+        chalk.white(subtitle) +
+        chalk.gray(" ".repeat(Math.max(0, 56 - subPadding - subtitle.length - 3))) +
+        chalk.magenta("│")
+      );
+      console.log(chalk.magenta("└" + "─".repeat(56) + "┘"));
+    } else {
+      console.log(chalk.magenta("┌" + "─".repeat(56) + "┐"));
+      console.log(chalk.magenta("│") + chalk.gray(" ".repeat(56)) + chalk.magenta("│"));
+      console.log(chalk.magenta("│") + chalk.gray(" ".repeat(56)) + chalk.magenta("│"));
+      console.log(chalk.magenta("└" + "─".repeat(56) + "┘"));
     }
+    console.log("");
+  }
 
-    console.log(chalk.cyan("╚" + "═".repeat(50) + "╝"));
+  // 打印带边框的标题（简化版）
+  static printSimpleTitle(title: string, subtitle?: string): void {
+    console.log("");
+    console.log("");
+    console.log(chalk.cyan("╔" + "═".repeat(56) + "╗"));
+    console.log(chalk.cyan("║") + chalk.gray(" ".repeat(56)) + chalk.cyan("║"));
+    console.log(chalk.cyan("║") + chalk.white.bold(" ".repeat(Math.floor((56 - title.length) / 2)) + title) + chalk.gray(" ".repeat(56 - Math.floor((56 - title.length) / 2) - title.length)) + chalk.cyan("║"));
+    console.log(chalk.cyan("║") + chalk.gray(" ".repeat(56)) + chalk.cyan("║"));
+    console.log(chalk.cyan("╚" + "═".repeat(56) + "╝"));
     console.log("");
   }
 
@@ -59,11 +80,40 @@ export class UI {
     console.log("");
   }
 
+  // 打印警告框
+  static printWarningBox(message: string): void {
+    console.log("");
+    console.log(chalk.yellow("  ⚠ " + message));
+    console.log("");
+  }
+
   // 打印步骤指示器
   static printStep(step: number, total: number, message: string): void {
     const progress = chalk.cyan("[" + step + "/" + total + "]");
     const arrow = chalk.cyan("→");
     console.log(`${progress} ${arrow} ${chalk.white(message)}`);
+  }
+
+  // 打印提示框
+  static printTip(message: string): void {
+    console.log("");
+    console.log(chalk.blue("  💡 " + message));
+    console.log("");
+  }
+
+  // 打印带框的信息
+  static printBox(title: string, content: string): void {
+    console.log("");
+    const boxWidth = 56;
+    console.log(chalk.cyan("┌" + "─".repeat(boxWidth) + "┐"));
+    console.log(chalk.cyan("│") + chalk.white.bold(" " + title) + chalk.gray(" ".repeat(boxWidth - title.length - 1)) + chalk.cyan("│"));
+    console.log(chalk.cyan("│") + chalk.gray(" ".repeat(boxWidth)) + chalk.cyan("│"));
+    const lines = content.split("\n");
+    lines.forEach((line) => {
+      console.log(chalk.cyan("│") + " " + chalk.white(line) + chalk.gray(" ".repeat(boxWidth - line.length - 1)) + chalk.cyan("│"));
+    });
+    console.log(chalk.cyan("└" + "─".repeat(boxWidth) + "┘"));
+    console.log("");
   }
 }
 
@@ -832,5 +882,30 @@ export function cleanupBackup(backupPath: string): void {
     }
   } catch (error) {
     Logger.warning(`清理备份文件失败: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * 清除 Claude Code 配置文件
+ * @returns 是否成功清除
+ */
+export function clearClaudeSettings(): boolean {
+  const fs = require("fs");
+  const settingsPath = getClaudeSettingsPath();
+
+  if (!existsSync(settingsPath)) {
+    Logger.warning("Claude Code 配置文件不存在，无需清除");
+    return false;
+  }
+
+  try {
+    // 清空配置文件内容（保留文件，只写入空对象）
+    writeFileSync(settingsPath, JSON.stringify({}, null, 2), "utf-8");
+
+    Logger.success("Claude Code 配置已清空");
+    return true;
+  } catch (error) {
+    Logger.error(`清空配置失败: ${error instanceof Error ? error.message : String(error)}`);
+    return false;
   }
 }

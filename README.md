@@ -93,6 +93,10 @@
 # 通过 npm 全局安装（推荐）
 npm install -g sakitamanler-ccl-launcher
 
+# 更新到最新版本
+npm install -g sakitamanler-ccl-launcher@latest
+```
+
 ### 前置要求
 
 在使用 ccl 之前，请确保已安装：

@@ -1,6 +1,6 @@
 {
   "name": "sakitamanler-ccl-win32",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "sakitamanler Claude Code Launcher for Windows x64",
   "main": "index.js",
   "bin": {
