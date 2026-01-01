@@ -1,6 +1,6 @@
 {
   "name": "sakitamanler-ccl-launcher",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "sakitamanler Claude Code Launcher CLI 安装器",
   "main": "index.js",
   "bin": {

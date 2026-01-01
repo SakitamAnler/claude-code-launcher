@@ -2,6 +2,7 @@
 
 const { spawn } = require('child_process');
 const process = require('process');
+const path = require('path');
 
 // 根据平台和架构确定要执行的命令
 function getTargetCommand() {
@@ -16,7 +17,10 @@ function getTargetCommand() {
     case 'linux-x64':
       return 'ccl-linux-x64';
     case 'win32-x64':
-      return 'ccl-win32-x64';
+      // Windows 下直接使用 ccl.exe
+      const pkgPath = path.join(__dirname, '..', 'node_modules', 'sakitamanler-ccl-win32');
+      const exePath = path.join(pkgPath, 'ccl.exe');
+      return exePath;
     default:
       throw new Error(`Unsupported platform: ${platform}-${arch}`);
   }
@@ -53,15 +57,10 @@ function executeTargetCommand() {
     let child;
     // Windows 平台特殊处理
     if (process.platform === 'win32') {
-      // 把命令和参数组装成一个字符串（否则会有 DEP0190 报警）
-      const fullCommand = [
-        command,
-        ...args.map(a => `"${a.replace(/"/g, '\\"')}"`)
-      ].join(' ');
-
-      child = spawn(fullCommand, {
+      // Windows 下直接执行 ccl.exe
+      child = spawn(command, args, {
         stdio: 'inherit',
-        shell: true
+        shell: false
       });
     } else {
       child = spawn(command, args, {
