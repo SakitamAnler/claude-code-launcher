@@ -98,10 +98,10 @@ npm install -g sakitamanler-ccl-launcher
 在使用 ccl 之前，请确保已安装：
 
 ```bash
-# 安装 Node.js（如未安装）
-# 访问 https://nodejs.org 下载安装
+# 1. Node.js
+#    访问 https://nodejs.org 下载安装
 
-# 安装 Claude Code
+# 2. Claude Code
 npm install -g @anthropic-ai/claude-code
 ```
 > 💡 **提示**：如果未安装 Claude Code，ccl 会尝试自动为您安装（可忽略）。
