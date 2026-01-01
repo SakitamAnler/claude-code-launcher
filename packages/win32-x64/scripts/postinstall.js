@@ -4,38 +4,32 @@ const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
 
-// 确保 bin 目录存在
-const binDir = path.join(__dirname, 'bin');
-if (!fs.existsSync(binDir)) {
-  fs.mkdirSync(binDir, { recursive: true });
-}
+console.log('正在解压 ccl 可执行文件...');
 
-// 解压 zip 文件
-const zipPath = path.join(__dirname, 'zip', 'ccl-win32-x64.zip');
+// 解压到包根目录
+const extractPath = path.join(__dirname, '..');
+const zipPath = path.join(__dirname, '..', 'zip', 'ccl-win32-x64.zip');
 
 // 检查 zip 文件是否存在
 if (!fs.existsSync(zipPath)) {
-  console.error('Error: ccl.zip file not found in zip directory');
-  console.error('Please ensure the ccl.zip file is present in the zip directory before installing');
+  console.error('❌ 错误：找不到可执行文件包');
+  console.error('路径:', zipPath);
   process.exit(1);
 }
 
-const zip = new AdmZip(zipPath);
-
 try {
-  console.log('Extracting ccl binary...');
-  zip.extractAllTo(binDir, true);
+  const zip = new AdmZip(zipPath);
+  zip.extractAllTo(extractPath, true);
+  console.log('✅ 解压完成！');
 
   // 检查是否解压成功
-  const cclPath = path.join(binDir, 'ccl.exe');
-  if (fs.existsSync(cclPath) === false) {
-    console.error('Error: ccl.exe binary not found in zip file');
-    process.exit(1);
+  const cclPath = path.join(extractPath, 'ccl.exe');
+  if (fs.existsSync(cclPath)) {
+    console.log('✅ ccl.exe 已就绪');
+  } else {
+    console.error('⚠️  警告：未找到 ccl.exe');
   }
-
-  console.log('Extract completed successfully!');
-
 } catch (error) {
-  console.error('Error extracting zip file:', error.message);
+  console.error('❌ 解压失败:', error.message);
   process.exit(1);
 }
