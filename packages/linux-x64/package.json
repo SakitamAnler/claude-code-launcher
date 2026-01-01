@@ -1,0 +1,41 @@
+{
+  "name": "sakitamanler-ccl-linux-x64",
+  "version": "0.9.8",
+  "description": "sakitamanler Claude Code Launcher for Linux x64",
+  "main": "index.js",
+  "bin": {
+    "ccl-linux-x64": "bin/ccl-linux-x64.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "bin/ccl-linux-x64.js",
+    "zip/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ccl",
+    "claude-code-launcher",
+    "sakitamanler",
+    "linux",
+    "x64"
+  ],
+  "author": "sakitamanler",
+  "license": "MIT",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "preferGlobal": true,
+  "dependencies": {
+    "adm-zip": "^0.5.9"
+  },
+  "devDependencies": {},
+  "type": "commonjs"
+}
