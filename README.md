@@ -90,14 +90,8 @@
 ### 安装
 
 ```bash
-# 方式一：通过 npm 全局安装（推荐）
+# 通过 npm 全局安装（推荐）
 npm install -g sakitamanler-ccl-launcher
-
-# 方式二：本地开发
-git clone <your-repo-url>
-cd claude-code-launcher
-bun install
-```
 
 ### 前置要求
 
@@ -110,8 +104,7 @@ bun install
 # 安装 Claude Code
 npm install -g @anthropic-ai/claude-code
 ```
-
-> 💡 **提示**：如果未安装 Claude Code，ccl 会尝试自动为您安装。
+> 💡 **提示**：如果未安装 Claude Code，ccl 会尝试自动为您安装（可忽略）。
 
 ### 基本使用
 
