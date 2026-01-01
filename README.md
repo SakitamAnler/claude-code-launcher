@@ -16,7 +16,7 @@
 
 ## 📖 项目简介
 
-`ccl` (Claude Code Launcher) 是一个强大的 Claude Code 模型启动器，让您可以轻松切换使用不同的 AI 模型作为 Claude Code 的后端。
+`ccl` (Claude Code Launcher) 是一个强大的 Claude Code 模型启动器，让您可以轻松切换使用不同的 AI 模型作为 Claude Code 的后端。使用npm install -g sakitamanler-ccl-launcher命令之后，运行ccl命令，打开配置文件配置您的api密钥，重新使用ccl命令即可使用！
 
 ### 💡 二次开发说明
 
@@ -109,7 +109,10 @@ npm install -g sakitamanler-ccl-launcher@latest
 # 1. Node.js
 #    访问 https://nodejs.org 下载安装
 
-# 2. Claude Code
+# 2. Git
+#    访问 https://git-scm.com/downloads 下载安装
+
+# 3. Claude Code（可忽略）
 npm install -g @anthropic-ai/claude-code
 ```
 > 💡 **提示**：如果未安装 Claude Code，ccl 会尝试自动为您安装（可忽略）。
@@ -345,35 +348,6 @@ claude-code-launcher/
 
 ---
 
-## 📦 发布到 npm
-
-### 准备工作
-
-1. 确保 `package.json` 中的版本号已更新
-2. 构建所有平台的可执行文件
-3. 测试功能是否正常
-
-### 发布步骤
-
-```bash
-# 1. 运行发布脚本
-bash publish.sh
-
-# 2. 或手动发布各个包
-cd packages/installer
-npm publish
-cd ../win32-x64
-npm publish
-```
-
----
-## 📄 License
-
-MIT License
-
-Copyright (c) 2025-present
-
----
 
 <div align="center">
 

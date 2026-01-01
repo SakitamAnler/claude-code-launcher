@@ -10,6 +10,7 @@ import {
   isExecutable,
   getCurrentDir,
   applyProviderToSettings,
+  clearClaudeSettings,
   UI,
 } from "./utils.js";
 import prompts from "prompts";
@@ -107,6 +108,33 @@ async function main(): Promise<void> {
         if (launchMode === "back") {
           // 清空 selectedProvider，重新选择 provider
           selectedProvider = '';
+          continue;
+        }
+
+        // 处理清除配置
+        if (launchMode === "clear") {
+          UI.printSeparator();
+          console.log(chalk.yellow("⚠️  清除配置模式"));
+          console.log(chalk.gray("  这将清除 Claude Code 的全局配置文件"));
+          console.log(chalk.gray("  配置文件位于: ~/.claude/settings.json"));
+          console.log("");
+
+          const confirm = await prompts({
+            type: "confirm",
+            name: "value",
+            message: "确认要清除配置吗？",
+            initial: false,
+          }) as { value: boolean };
+
+          if (confirm.value) {
+            clearClaudeSettings();
+            console.log("");
+            console.log(chalk.gray("  提示: 清除配置后，请重新运行 ccl 命令"));
+          } else {
+            console.log("");
+            console.log(chalk.gray("  已取消清除操作"));
+          }
+          console.log("");
           continue;
         }
 
@@ -250,6 +278,11 @@ async function selectLaunchMode(): Promise<string> {
             title: "永久模式",
             description: "写入配置文件，后续可直接用 claude 命令启动",
             value: "permanent",
+          },
+          {
+            title: "清除配置",
+            description: "清除 Claude Code 的全局配置文件 (~/.claude/settings.json)",
+            value: "clear",
           },
           {
             title: "返回上一级",
