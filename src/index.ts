@@ -22,7 +22,7 @@ import chalk from "chalk";
 async function main(): Promise<void> {
   try {
     // 显示程序标题
-    UI.printTitle("claude-code-launcher", "by sakitamanler");
+    UI.printTitle("CLAUDE CODE CCL", "by sakitamanler");
 
     // console.log('程序参数：', process.argv)
     const argsResult = parseArgs();
@@ -99,7 +99,7 @@ async function main(): Promise<void> {
         // 处理退出
         if (launchMode === "exit") {
           console.log("");
-          console.log(chalk.gray("👋 再见！"));
+          console.log(chalk.rgb(214, 124, 97)("👋 再见！"));
           console.log("");
           process.exit(0);
         }
@@ -114,25 +114,25 @@ async function main(): Promise<void> {
         // 处理清除配置
         if (launchMode === "clear") {
           UI.printSeparator();
-          console.log(chalk.yellow("⚠️  清除配置模式"));
-          console.log(chalk.gray("  这将清除 Claude Code 的全局配置文件"));
-          console.log(chalk.gray("  配置文件位于: ~/.claude/settings.json"));
+          console.log(chalk.rgb(255, 147, 115).bold("⚠️  清除配置模式"));
+          console.log(chalk.rgb(214, 124, 97)("  这将清除 Claude Code 的全局配置文件"));
+          console.log(chalk.rgb(214, 124, 97)("  配置文件位于: ~/.claude/settings.json"));
           console.log("");
 
-          const confirm = await prompts({
+          const confirm = await prompts<{ value: boolean }>({
             type: "confirm",
             name: "value",
             message: "确认要清除配置吗？",
             initial: false,
-          }) as { value: boolean };
+          });
 
           if (confirm.value) {
             clearClaudeSettings();
             console.log("");
-            console.log(chalk.gray("  提示: 清除配置后，请重新运行 ccl 命令"));
+            console.log(chalk.rgb(214, 124, 97)("  提示: 清除配置后，请重新运行 ccl 命令"));
           } else {
             console.log("");
-            console.log(chalk.gray("  已取消清除操作"));
+            console.log(chalk.rgb(214, 124, 97)("  已取消清除操作"));
           }
           console.log("");
           continue;
@@ -150,20 +150,20 @@ async function main(): Promise<void> {
           }
 
           UI.printSeparator();
-          console.log(chalk.green("✓") + " 配置已保存！");
+          console.log(chalk.rgb(255, 147, 115).bold("✓") + " 配置已保存！");
           console.log("");
-          console.log("  现在可以直接使用 " + chalk.yellow("'claude'") + " 命令启动");
+          console.log("  现在可以直接使用 " + chalk.rgb(255, 147, 115).bold("'claude'") + " 命令启动");
           console.log("");
-          console.log("  下次启动将默认使用: " + chalk.cyan(selectedProvider));
+          console.log("  下次启动将默认使用: " + chalk.rgb(214, 124, 97)(selectedProvider));
           console.log("");
-          console.log(chalk.gray("  提示: 如需切换模型，请再次运行 ccl 命令"));
+          console.log(chalk.rgb(214, 124, 97)("  提示: 如需切换模型，请再次运行 ccl 命令"));
           console.log("");
           process.exit(0);
         } else {
           // 临时模式：使用环境变量
           UI.printSeparator();
-          console.log(chalk.cyan("🚀 启动模式: 临时模式"));
-          console.log(chalk.gray("  使用环境变量，退出后不影响配置文件"));
+          console.log(chalk.rgb(214, 124, 97)("🚀 启动模式: 临时模式"));
+          console.log(chalk.rgb(214, 124, 97)("  使用环境变量，退出后不影响配置文件"));
           console.log("");
           const envVars = providerToEnvVars(providerConfig);
           const additionalOTQP = config.additionalOTQP || '';
@@ -204,11 +204,15 @@ async function selectProviderInteractively(config: any): Promise<string> {
 
   // 直接在当前进程中使用 prompts 选择 provider（避免 Windows 子进程问题）
   try {
-    const choices = providerNames.map((name: string) => ({
-      title: name,
-      description: `${config.providers[name].description}`,
-      value: name,
-    }));
+    // 为每个 provider 添加数字快捷键（1-9）
+    const choices = providerNames.map((name: string, index: number) => {
+      const shortcut = index < 9 ? `${index + 1}. ` : '';
+      return {
+        title: `${shortcut}${name}`,
+        description: `${config.providers[name].description}`,
+        value: name,
+      };
+    });
 
     // 增加一个退出选项
     choices.push({

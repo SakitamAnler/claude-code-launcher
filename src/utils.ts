@@ -9,42 +9,50 @@ const VERSION = "x.y.z"; // BUILD_VERSION_INJECTION_PLACEHOLDER
 
 const CONFIG_FILE_NAME = "ccl.config.json";
 
+// 预生成的 ASCII 艺术字标题
+const ART_TITLE = 
+` ██████╗██╗      █████╗ ██╗   ██╗██████╗ ███████╗
+██╔════╝██║     ██╔══██╗██║   ██║██╔══██╗██╔════╝            
+██║     ██║     ███████║██║   ██║██║  ██║█████╗              
+██║     ██║     ██╔══██║██║   ██║██║  ██║██╔══╝              
+╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝███████╗            
+ ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝            
+                                                             
+ ██████╗ ██████╗ ██████╗ ███████╗     ██████╗ ██████╗██╗     
+██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██╔════╝██╔════╝██║
+██║     ██║   ██║██║  ██║█████╗      ██║     ██║     ██║     
+██║     ██║   ██║██║  ██║██╔══╝      ██║     ██║     ██║     
+╚██████╗╚██████╔╝██████╔╝███████╗    ╚██████╗╚██████╗███████╗
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝     ╚═════╝ ╚═════╝╚══════╝
+                                                             `;
+
 /**
  * 界面美化工具
  */
 export class UI {
   // 打印艺术字标题
-  static printTitle(title: string, subtitle?: string): void {
-    console.log("");
-    console.log("");
-    console.log(chalk.magenta.bold(`
-  ███████╗██████╗ ███████╗███████╗██████╗
-  ██╔════╝██╔══██╗██╔════╝██╔════╝██╔══██╗
-  █████╗  ██████╔╝█████╗  █████╗  ██║  ██║
-  ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝  ██║  ██║
-  ██║     ██║  ██║███████╗███████╗██████╔╝
-  ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝
-`));
+  static printTitle(title: string = "CLAUDE CODE CCL", subtitle?: string): void {
     console.log("");
     console.log("");
 
-    // 打印副标题
+    // 使用预生成的 ASCII 艺术字
+    console.log(chalk.rgb(255, 147, 115).bold(ART_TITLE));
+    console.log("");
+
+    // 打印副标题（居中显示，包含版本号和作者信息）
     if (subtitle) {
-      console.log(chalk.magenta("┌" + "─".repeat(56) + "┐"));
-      const subPadding = Math.floor((56 - subtitle.length - 2) / 2);
+      const lineWidth = 61; // 与艺术字可见宽度对齐
+      const versionInfo = `v1.1.8 | ${subtitle}`;
+      const textPadding = Math.round((lineWidth - versionInfo.length) / 2);
+
+      // 使用自定义颜色 #d67c61 (陶土棕色)
+      console.log(chalk.rgb(214, 124, 97)("─".repeat(lineWidth)));
       console.log(
-        chalk.magenta("│") +
-        chalk.gray(" ".repeat(Math.max(0, subPadding + 1))) +
-        chalk.white(subtitle) +
-        chalk.gray(" ".repeat(Math.max(0, 56 - subPadding - subtitle.length - 3))) +
-        chalk.magenta("│")
+        chalk.rgb(214, 124, 97)(" ".repeat(textPadding)) +
+        chalk.white.bold(versionInfo) +
+        chalk.rgb(214, 124, 97)(" ".repeat(lineWidth - textPadding - versionInfo.length))
       );
-      console.log(chalk.magenta("└" + "─".repeat(56) + "┘"));
-    } else {
-      console.log(chalk.magenta("┌" + "─".repeat(56) + "┐"));
-      console.log(chalk.magenta("│") + chalk.gray(" ".repeat(56)) + chalk.magenta("│"));
-      console.log(chalk.magenta("│") + chalk.gray(" ".repeat(56)) + chalk.magenta("│"));
-      console.log(chalk.magenta("└" + "─".repeat(56) + "┘"));
+      console.log(chalk.rgb(214, 124, 97)("─".repeat(lineWidth)));
     }
     console.log("");
   }
@@ -53,51 +61,51 @@ export class UI {
   static printSimpleTitle(title: string, subtitle?: string): void {
     console.log("");
     console.log("");
-    console.log(chalk.cyan("╔" + "═".repeat(56) + "╗"));
-    console.log(chalk.cyan("║") + chalk.gray(" ".repeat(56)) + chalk.cyan("║"));
-    console.log(chalk.cyan("║") + chalk.white.bold(" ".repeat(Math.floor((56 - title.length) / 2)) + title) + chalk.gray(" ".repeat(56 - Math.floor((56 - title.length) / 2) - title.length)) + chalk.cyan("║"));
-    console.log(chalk.cyan("║") + chalk.gray(" ".repeat(56)) + chalk.cyan("║"));
-    console.log(chalk.cyan("╚" + "═".repeat(56) + "╝"));
+    console.log(chalk.rgb(214, 124, 97)("╔" + "═".repeat(56) + "╗"));
+    console.log(chalk.rgb(214, 124, 97)("║") + chalk.rgb(214, 124, 97)(" ".repeat(56)) + chalk.rgb(214, 124, 97)("║"));
+    console.log(chalk.rgb(214, 124, 97)("║") + chalk.white.bold(" ".repeat(Math.floor((56 - title.length) / 2)) + title) + chalk.rgb(214, 124, 97)(" ".repeat(56 - Math.floor((56 - title.length) / 2) - title.length)) + chalk.rgb(214, 124, 97)("║"));
+    console.log(chalk.rgb(214, 124, 97)("║") + chalk.rgb(214, 124, 97)(" ".repeat(56)) + chalk.rgb(214, 124, 97)("║"));
+    console.log(chalk.rgb(214, 124, 97)("╚" + "═".repeat(56) + "╝"));
     console.log("");
   }
 
   // 打印分隔线
   static printSeparator(): void {
-    console.log(chalk.gray("─".repeat(60)));
+    console.log(chalk.rgb(214, 124, 97)("─".repeat(60)));
   }
 
   // 打印成功框
   static printSuccessBox(message: string): void {
     console.log("");
-    console.log(chalk.green("  ✓ " + message));
+    console.log(chalk.rgb(255, 147, 115).bold("  ✓ " + message));
     console.log("");
   }
 
   // 打印信息框
   static printInfoBox(message: string): void {
     console.log("");
-    console.log(chalk.blue("  ℹ " + message));
+    console.log(chalk.rgb(214, 124, 97)("  ℹ " + message));
     console.log("");
   }
 
   // 打印警告框
   static printWarningBox(message: string): void {
     console.log("");
-    console.log(chalk.yellow("  ⚠ " + message));
+    console.log(chalk.rgb(255, 147, 115).bold("  ⚠ " + message));
     console.log("");
   }
 
   // 打印步骤指示器
   static printStep(step: number, total: number, message: string): void {
-    const progress = chalk.cyan("[" + step + "/" + total + "]");
-    const arrow = chalk.cyan("→");
+    const progress = chalk.rgb(214, 124, 97)("[" + step + "/" + total + "]");
+    const arrow = chalk.rgb(214, 124, 97)("→");
     console.log(`${progress} ${arrow} ${chalk.white(message)}`);
   }
 
   // 打印提示框
   static printTip(message: string): void {
     console.log("");
-    console.log(chalk.blue("  💡 " + message));
+    console.log(chalk.rgb(214, 124, 97)("  💡 " + message));
     console.log("");
   }
 
@@ -105,14 +113,14 @@ export class UI {
   static printBox(title: string, content: string): void {
     console.log("");
     const boxWidth = 56;
-    console.log(chalk.cyan("┌" + "─".repeat(boxWidth) + "┐"));
-    console.log(chalk.cyan("│") + chalk.white.bold(" " + title) + chalk.gray(" ".repeat(boxWidth - title.length - 1)) + chalk.cyan("│"));
-    console.log(chalk.cyan("│") + chalk.gray(" ".repeat(boxWidth)) + chalk.cyan("│"));
+    console.log(chalk.rgb(214, 124, 97)("┌" + "─".repeat(boxWidth) + "┐"));
+    console.log(chalk.rgb(214, 124, 97)("│") + chalk.white.bold(" " + title) + chalk.rgb(214, 124, 97)(" ".repeat(boxWidth - title.length - 1)) + chalk.rgb(214, 124, 97)("│"));
+    console.log(chalk.rgb(214, 124, 97)("│") + chalk.rgb(214, 124, 97)(" ".repeat(boxWidth)) + chalk.rgb(214, 124, 97)("│"));
     const lines = content.split("\n");
     lines.forEach((line) => {
-      console.log(chalk.cyan("│") + " " + chalk.white(line) + chalk.gray(" ".repeat(boxWidth - line.length - 1)) + chalk.cyan("│"));
+      console.log(chalk.rgb(214, 124, 97)("│") + " " + chalk.white(line) + chalk.rgb(214, 124, 97)(" ".repeat(boxWidth - line.length - 1)) + chalk.rgb(214, 124, 97)("│"));
     });
-    console.log(chalk.cyan("└" + "─".repeat(boxWidth) + "┘"));
+    console.log(chalk.rgb(214, 124, 97)("└" + "─".repeat(boxWidth) + "┘"));
     console.log("");
   }
 }
@@ -122,19 +130,19 @@ export class UI {
  */
 export class Logger {
   static info(message: string): void {
-    console.log(chalk.blue("[INFO]"), `   ${message}`);
+    console.log(chalk.rgb(214, 124, 97)("[INFO]"), `   ${message}`);
   }
 
   static success(message: string): void {
-    console.log(chalk.green("[SUCCESS]"), message);
+    console.log(chalk.rgb(255, 147, 115).bold("[SUCCESS]"), message);
   }
 
   static warning(message: string): void {
-    console.log(chalk.yellow("[WARNING]"), message);
+    console.log(chalk.rgb(255, 147, 115).bold("[WARNING]"), message);
   }
 
   static error(message: string): void {
-    console.log(chalk.red("[ERROR]"), `  ${message}`);
+    console.log(chalk.rgb(255, 147, 115).bold("[ERROR]"), `  ${message}`);
   }
 }
 
@@ -267,6 +275,16 @@ export function loadConfig(): AppConfig | null {
           api_timeout_ms: "600000",
           model: "deepseek-chat",
           small_fast_model: "deepseek-chat",
+          claude_code_disable_nonessential_traffic: "1",
+        },
+        "Qwen3-Coder": {
+          description:
+            "通义千问 Qwen3-Coder 模型，通过 ModelScope API 调用",
+          base_url: "https://api-inference.modelscope.cn",
+          auth_token: "MODELSCOPE_API_KEY",
+          api_timeout_ms: "3000000",
+          model: "Qwen/Qwen3-Coder-480B-A35B-Instruct",
+          small_fast_model: "Qwen/Qwen3-Coder-480B-A35B-Instruct",
           claude_code_disable_nonessential_traffic: "1",
         },
       },

@@ -22,9 +22,9 @@ if (!fs.existsSync(binaryPath)) {
 
 // 将所有参数传递给实际的 ccl 二进制文件
 const args = process.argv.slice(2);
+
 const child = spawn(binaryPath, args, {
-  stdio: 'inherit',
-  env: process.env
+  stdio: 'inherit'
 });
 
 // 处理子进程退出

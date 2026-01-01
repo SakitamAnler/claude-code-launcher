@@ -4,7 +4,7 @@ declare module 'prompts' {
     name: string;
     message: string;
     choices?: Array<{ title: string; description?: string; value: any }>;
-    initial?: number;
+    initial?: number | boolean | string;
     stdout?: NodeJS.WriteStream;
   }
 
@@ -16,7 +16,7 @@ declare module 'prompts' {
     [key: string]: any;
   }
 
-  function prompts(questions: PromptObject | PromptObject[], options?: Options): Promise<Response>;
-  
+  function prompts<T = Response>(questions: PromptObject | PromptObject[], options?: Options): Promise<T>;
+
   export default prompts;
 }
