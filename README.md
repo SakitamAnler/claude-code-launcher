@@ -29,7 +29,7 @@ npm install -g sakitamanler-ccl-launcher
 ccl  # 交互式选择模型
 ```
 
-![运行界面](screenshot.png)
+<img src="screenshot.png" alt="运行界面" width="700" />
 
 ---
 
