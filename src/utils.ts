@@ -10,6 +10,52 @@ const VERSION = "x.y.z"; // BUILD_VERSION_INJECTION_PLACEHOLDER
 const CONFIG_FILE_NAME = "ccl.config.json";
 
 /**
+ * 界面美化工具
+ */
+export class UI {
+  // 打印带边框的标题
+  static printTitle(title: string): void {
+    const padding = 4;
+    const line = "═".repeat(title.length + padding * 2);
+    console.log("");
+    console.log(chalk.cyan("╔" + line + "╗"));
+    console.log(chalk.cyan("║") + " ".repeat(padding) + chalk.bold.cyan(title) + " ".repeat(padding) + chalk.cyan("║"));
+    console.log(chalk.cyan("╚" + line + "╝"));
+    console.log("");
+  }
+
+  // 打印分隔线
+  static printSeparator(): void {
+    console.log(chalk.gray("─".repeat(60)));
+  }
+
+  // 打印成功框
+  static printSuccessBox(message: string): void {
+    console.log("");
+    console.log(chalk.green("┌─ " + message + " " + "─".repeat(Math.max(0, 50 - message.length))));
+    console.log(chalk.green("│") + " " + chalk.white("✓") + " " + message);
+    console.log(chalk.green("└" + "─".repeat(message.length + 4)));
+    console.log("");
+  }
+
+  // 打印信息框
+  static printInfoBox(message: string): void {
+    console.log("");
+    console.log(chalk.blue("┌─ " + message + " " + "─".repeat(Math.max(0, 50 - message.length))));
+    console.log(chalk.blue("│") + " " + chalk.white("ℹ") + " " + message);
+    console.log(chalk.blue("└" + "─".repeat(message.length + 4)));
+    console.log("");
+  }
+
+  // 打印步骤指示器
+  static printStep(step: number, total: number, message: string): void {
+    const progress = chalk.cyan("[" + step + "/" + total + "]");
+    const arrow = chalk.cyan("→");
+    console.log(`${progress} ${arrow} ${chalk.white(message)}`);
+  }
+}
+
+/**
  * 日志输出工具
  */
 export class Logger {

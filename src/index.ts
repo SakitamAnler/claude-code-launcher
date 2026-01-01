@@ -10,14 +10,19 @@ import {
   isExecutable,
   getCurrentDir,
   applyProviderToSettings,
+  UI,
 } from "./utils.build.js";
 import prompts from "prompts";
+import chalk from "chalk";
 
 /**
  * 主函数
  */
 async function main(): Promise<void> {
   try {
+    // 显示程序标题
+    UI.printTitle("Claude Code Launcher v" + "x.y.z"); // 版本号会被构建脚本替换
+
     // console.log('程序参数：', process.argv)
     const argsResult = parseArgs();
 
@@ -59,7 +64,7 @@ async function main(): Promise<void> {
     }
 
     // 2. 检查 Claude Code 是否已安装
-    Logger.info("检查 Claude Code 是否已安装");
+    UI.printStep(1, 4, "检查 Claude Code 是否已安装");
     const isInstalled = await checkClaudeCodeInstalled();
 
     if (!isInstalled) {
@@ -68,10 +73,10 @@ async function main(): Promise<void> {
       process.exit(1);
     }
 
-    Logger.success("检测到 Claude Code 已安装");
+    UI.printSuccessBox("Claude Code 已安装");
 
     // 3. 加载和验证配置文件
-    Logger.info("加载配置文件...");
+    UI.printStep(2, 4, "加载配置文件");
     const config = loadConfig();
     // 如果配置文件加载失败（null），则停止程序运行
     if (config === null) {
@@ -82,7 +87,7 @@ async function main(): Promise<void> {
       }, 5000);
     }
     else {
-      Logger.success("配置文件加载成功");
+      UI.printSuccessBox("配置文件加载成功");
 
       // 4. 处理命令行参数
       let selectedProvider = argsResult.provider || '';
@@ -126,9 +131,43 @@ async function main(): Promise<void> {
       // 6. 选择启动模式
       const launchMode = await selectLaunchMode();
 
+      if (launchMode === "exit") {
+        Logger.info("退出应用程序");
+        process.exit(0);
+      }
+
+      if (launchMode === "back") {
+        // 返回上一级，重新选择 provider
+        selectedProvider = await selectProviderInteractively(config);
+        const providerConfigBack = config.providers[selectedProvider];
+        if (!providerConfigBack) {
+          Logger.error(`Provider "${selectedProvider}" 配置不存在`);
+          process.exit(1);
+        }
+
+        // 递归调用，重新选择启动模式
+        const launchModeRetry = await selectLaunchMode();
+
+        if (launchModeRetry === "permanent") {
+          const success = applyProviderToSettings(providerConfigBack);
+          if (!success) {
+            Logger.error("应用配置失败，程序终止");
+            process.exit(1);
+          }
+          Logger.success("配置已保存！现在可以直接使用 'claude' 命令启动 Claude Code");
+          Logger.info(`下次启动将默认使用 ${selectedProvider} 模型`);
+          process.exit(0);
+        } else {
+          const envVars = providerToEnvVars(providerConfigBack);
+          const additionalOTQP = config.additionalOTQP || '';
+          await launchClaudeCode(envVars, prompt, output, additionalOTQP);
+        }
+        return;
+      }
+
       if (launchMode === "permanent") {
         // 永久模式：写入配置文件
-        Logger.info(`正在应用 ${selectedProvider} 配置到 Claude Code...`);
+        UI.printStep(4, 4, `应用 ${selectedProvider} 配置`);
         const success = applyProviderToSettings(providerConfig);
 
         if (!success) {
@@ -136,14 +175,18 @@ async function main(): Promise<void> {
           process.exit(1);
         }
 
-        Logger.success("配置已保存！现在可以直接使用 'claude' 命令启动 Claude Code");
-        Logger.info(`下次启动将默认使用 ${selectedProvider} 模型`);
-        Logger.info("");
-        Logger.info("如需切换到其他模型，请再次运行 ccl 命令");
+        UI.printSeparator();
+        console.log(chalk.green("✓") + " 配置已保存！");
+        console.log("");
+        console.log("  现在可以直接使用 " + chalk.yellow("'claude'") + " 命令启动");
+        console.log("");
+        console.log("  下次启动将默认使用: " + chalk.cyan(selectedProvider));
+        console.log("");
+        console.log(chalk.gray("  提示: 如需切换模型，请再次运行 ccl 命令"));
+        console.log("");
         process.exit(0);
       } else {
         // 临时模式：使用环境变量
-        Logger.info(`使用临时模式启动 ${selectedProvider}...`);
         const envVars = providerToEnvVars(providerConfig);
         const additionalOTQP = config.additionalOTQP || '';
         await launchClaudeCode(envVars, prompt, output, additionalOTQP);
@@ -368,6 +411,16 @@ async function runLaunchModeSelector(): Promise<void> {
             title: "永久模式",
             description: "写入配置文件，后续可直接用 claude 命令启动",
             value: "permanent",
+          },
+          {
+            title: "返回上一级",
+            description: "返回 provider 选择",
+            value: "back",
+          },
+          {
+            title: "退出",
+            description: "退出应用程序",
+            value: "exit",
           },
         ],
         initial: 0,
