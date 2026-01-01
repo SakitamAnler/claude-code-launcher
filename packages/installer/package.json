@@ -28,7 +28,9 @@
   "author": "sakitamanler",
   "license": "MIT",
   "dependencies": {
-    "sakitamanler-ccl-win32": "^0.9.8",
+    "sakitamanler-ccl-win32": "^0.9.8"
+  },
+  "optionalDependencies": {
     "sakitamanler-ccl-darwin-arm64": "^0.9.8",
     "sakitamanler-ccl-darwin-x64": "^0.9.8",
     "sakitamanler-ccl-linux-x64": "^0.9.8"
